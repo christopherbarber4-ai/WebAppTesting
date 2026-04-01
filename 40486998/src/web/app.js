@@ -3,7 +3,18 @@ const app = express(); // instatiate express
 import mysql from "mysql2"; // import mysql modulees
 import sessions from "express-session";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const result = app.use(express.static(path.join(__dirname, "/public")));
+
+
+
 const PORT = 3000;
+
+
 
 app.set("view engine", "ejs");
 
