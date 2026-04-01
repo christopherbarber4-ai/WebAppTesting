@@ -11,14 +11,21 @@ const __dirname = path.dirname(__filename); //middleware to ensure I can access 
 const PORT = 3000;
 const oneHour = 10000 * 60 * 60 * 1; // variable for cookie timeout
 
+const users = [{
+    uName: "christopher.barber4@gmail.com",
+    passW: "123",
+},
+{
+    uName: "noleen.robinson@hotmail.com",
+    passW: "2234",
+}];
+
 app.use(sessions({ // creates a session object on the node server
     secret: 'cbarberproject',
     saveUninitialized: true,
     cookie: { maxAge: oneHour },
     resave: false
 }));
-
-
 
 app.set("view engine", "ejs");
 
@@ -33,8 +40,9 @@ app.get("/", (req, res) => {
 app.post("/login", async (req, res) => {
     const userEmail = req.body.userEmail;
     const userPass = req.body.password;
+    req.session.authen = userEmail; 
 
-    if (userPass === "123") { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
+    if (req.session.authen) { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
         res.render("landing");
     } else {
         res.redirect("/");
@@ -43,15 +51,13 @@ app.post("/login", async (req, res) => {
 
 });
 
-
 app.get("/landing", (req, res) => {
 
     res.render("landing");
 })
 
-
 app.get("/logout", (req, res) => {
-        req.session.destroy();
+    req.session.destroy();
     res.render("loggedout");
 
 })
