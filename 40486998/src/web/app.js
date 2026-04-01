@@ -19,12 +19,9 @@ app.post("/login", async (req, res) => {
     const userEmail = req.body.userEmail;
     const userPass = req.body.password;
 
-    if (userPass === "123") {
-        res.send(`<h2> ${userEmail} tried to login </h2>
-        
-        <a href= "http://localhost:3000"> Back to login `);
+    if (userPass === "123") { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
+        res.render("landing");
     } else {
-
         res.redirect("/");
     }
 
@@ -39,6 +36,11 @@ app.get("/landing", (req, res) => {
     res.render("landing");
 })
 
+
+app.get("/logout", (req,res) => {
+    req.session.destroy();
+    res.redirect("/");
+})
 
 app.listen(PORT, () => {
     console.log(`Server is live! http://localhost:${PORT}`);
