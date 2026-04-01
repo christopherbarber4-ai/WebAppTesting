@@ -7,12 +7,16 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const result = app.use(express.static(path.join(__dirname, "/public")));
-
-
-
+const __dirname = path.dirname(__filename); //middleware to ensure I can access static files e.g. css
 const PORT = 3000;
+const oneHour = 10000 * 60 * 60 * 1; // variable for cookie timeout
+
+app.use(sessions({ // creates a session object on the node server
+    secret: 'cbarberproject',
+    saveUninitialized: true,
+    cookie: { maxAge: oneHour },
+    resave: false
+}));
 
 
 
@@ -40,17 +44,16 @@ app.post("/login", async (req, res) => {
 });
 
 
-
-
 app.get("/landing", (req, res) => {
 
     res.render("landing");
 })
 
 
-app.get("/logout", (req,res) => {
-    req.session.destroy();
-    res.redirect("/");
+app.get("/logout", (req, res) => {
+        req.session.destroy();
+    res.render("loggedout");
+
 })
 
 app.listen(PORT, () => {
