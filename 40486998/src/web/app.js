@@ -99,16 +99,17 @@ app.get("/coursemgmt", async (req, res) => {
 });
 
 app.get("/officermgmt", async (req, res) => {
+    const userSQL = `SELECT * FROM systemuser`
+    const [users] = await db.promise().query(userSQL);
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
-    res.render("officermgmt", { courses });
+    res.render("officermgmt", { courses, users });
 });
 
 app.post("/addofficer", async (req, res) => {
     const addOfficerForm = { ...req.body };
     const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
 VALUES (?, ?, ?, ?, ?)`
-
     const params = [
     addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
     addOfficerForm.officerEmail,
@@ -118,12 +119,28 @@ VALUES (?, ?, ?, ?, ?)`
     try {
         const [result] = await db.promise().query(insertOfficerSQL, params)
         console.log(result);
+            res.send(`<H2> New user succesfully added </h2> <br> 
+                click <a href = "/officermgmt"> here </a> to return to user management `);
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
     }
 
 });
+
+app.get("/editofficer/:eid", async (req, res) =>{
+    //const adminId <---- Need to add in authorisation;
+    const officerId = req.params.eid;
+    const singleOfficerSQL = `SELECT * FROM systemuser WHERE id = ?`
+    const [officer] = await db.promise().query(singleOfficerSQL,[officerId]);
+    const coursesql = `SELECT * FROM course`
+    const [courses] = await db.promise().query(coursesql);
+
+    res.render("officerupdate", {officer, courses});
+
+
+});
+
 
 
 

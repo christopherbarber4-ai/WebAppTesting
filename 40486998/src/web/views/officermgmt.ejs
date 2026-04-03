@@ -2,29 +2,48 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
-  <link rel="stylesheet" href="myuis.css">
-  <title>Officer Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+    <link rel="stylesheet" href="myuis.css">
+    <title>Officer Management</title>
 </head>
 
 <body>
 
-  <header>
-    <a href="/landing" class="logo">HEDclass</a>
-    <a href="#" class="button">Dashboard</a>
-    <a href="/studentmgmt" class="button">Student Management</a>
-    <a href="/officermgmt" class="button"> Officer Management </a>
-    <a href = "/coursemgmt" class="button"> Course Management</a>
-    <a href="/logout" class="button">Logout</a>
+    <header>
+        <a href="/landing" class="logo">HEDclass</a>
+        <a href="#" class="button">Dashboard</a>
+        <a href="/studentmgmt" class="button">Student Management</a>
+        <a href="/officermgmt" class="button"> Officer Management </a>
+        <a href="/coursemgmt" class="button"> Course Management</a>
+        <a href="/logout" class="button">Logout</a>
 
-  </header>
+    </header>
+
+    <table>
+        <tbody>
+            <%users.forEach((user)=>{ %>
+                <tr>
+
+                    <td> first name: <%= user.firstName %>
+                    </td>
+                    <td> second name: <%= user.lastName %> <br></td>
+                    <td> email: <%= user.email %><br></td>
+                    <td> course: <%= user.role %><br></td>
+                    <td> <a href="/editofficer/<%=user.id%>"> Edit </a></td>
+
+
+                </tr>
+                <% }); %>
+        </tbody>
+    </table>
+
 
     <p>To create a new officer, please fill out all fields...</p>
 
     <div class="officerForm">
-        <form action="/addofficer" method="post" >
+        <form action="/addofficer" method="post">
             <div>
                 First Name: <input name="officerFirstName" required>
             </div>
@@ -36,26 +55,28 @@
             </div>
             <div>
                 Role: <select name="officerRole" required>
-                    <option value ="admin"> Admin </option>
-                    <option value= "officer"> Officer</option>
+                    <option value="admin"> Admin </option>
+                    <option value="officer"> Officer</option>
                 </select>
             </div>
             <div>
                 Password: <input name="officerPassword" required>
             </div>
             <div>
-                Course: <select name="OfficerCourseName" required> 
-                    <% courses.forEach ((course) => {%>
-                    <option value="<%= course.id%>"><%= course.title%></option>
-                    <%}); %>
-             </select>
+                Course: <select name="OfficerCourseName" required>
+                    <% courses.forEach ((course)=> {%>
+                        <option value="<%= course.id%>">
+                            <%= course.title%>
+                        </option>
+                        <%}); %>
+                </select>
             </div>
 
             <div>
-               <button>Add Officer</button>
+                <button>Add Officer</button>
             </div>
         </form>
-        </div>
+    </div>
 
 
 </body>
