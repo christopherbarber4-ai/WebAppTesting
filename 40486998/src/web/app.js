@@ -137,10 +137,29 @@ app.get("/editofficer/:eid", async (req, res) =>{
     const [courses] = await db.promise().query(coursesql);
 
     res.render("officerupdate", {officer, courses});
-
-
 });
 
+app.post ("/editofficer", async (req,res) =>{
+    const updateOfficerForm = {...req.body};
+    const updateSQL = `UPDATE SystemUser SET firstName = ?, lastName = ?, email = ?, role = ?
+    WHERE id = ?`;
+    const updateParams = [updateOfficerForm.officerFirstName, 
+                        updateOfficerForm.officerLastName, 
+                        updateOfficerForm.officerEmail, 
+                        updateOfficerForm.officerRole,
+                        updateOfficerForm.officerid]
+                        
+    try{    
+        const [result] = await db.promise().query(updateSQL,updateParams);
+        console.log(result);
+
+    } catch (error){
+               res.status(500).json(error);
+        console.log(error);
+    }
+
+
+})
 
 
 

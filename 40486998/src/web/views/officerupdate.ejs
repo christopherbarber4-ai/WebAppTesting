@@ -14,27 +14,28 @@
     <form action="/editofficer" method="POST">
         <p>
         <div>
-            User id: <input type="text" name="id_field" readonly value="<%=officer[0].id %>">
+            User id: <input type="text" name="officerid" readonly value="<%=officer[0].id %>">
         </div>
         <div>
             User First Name: <input type="text" name="officerFirstName" value="<%=officer[0].firstName %>">
         </div>
         <div>
-            User Last Name: <input type="text" name="officerLastName"  value="<%=officer[0].lastName %>">
+            User Last Name: <input type="text" name="officerLastName" value="<%=officer[0].lastName %>">
         </div>
         <div>
-            User email address: <input type="text" name="officerEmail"  value="<%=officer[0].email %>">
+            User email address: <input type="text" name="officerEmail" value="<%=officer[0].email %>">
         </div>
         <div>
-            User Role: <input type="text" name="officerRole"  value="<%=officer[0].role %>">
+            User Role: <input type="text" name="officerRole" value="<%=officer[0].role %>">
         </div>
         <div>
             User Course: <select name="OfficerCourseName" required>
-                    <% courses.forEach ((course)=> {%>
-                        <option value="<%= course.id%>">
-                            <%= course.title%>
-                        </option>
-                        <%}); %> </select>
+                <% courses.forEach ((course)=> {%>
+                    <option value="<%= course.id%>">
+                        <%= course.title%>
+                    </option>
+                    <%}); %>
+            </select>
         </div>
 
 
