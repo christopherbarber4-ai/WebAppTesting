@@ -54,16 +54,16 @@ app.get("/", (req, res) => {
 app.post("/login", async (req, res) => {
     const userEmail = req.body.userEmail;
     const userPass = req.body.password;
-    req.session.authen = userEmail; 
+    req.session.authen = userEmail;
 
     res.redirect("/landing");
 
-   /* if (req.session.authen) { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
-        res.render("landing", {students});
-    } else {
-        res.redirect("/");
-    }
-*/
+    /* if (req.session.authen) { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
+         res.render("landing", {students});
+     } else {
+         res.redirect("/");
+     }
+ */
 
 });
 
@@ -78,31 +78,53 @@ app.get("/logout", (req, res) => {
 
 })
 
-app.get("/studentmgmt", async (req,res) => {
+app.get("/studentmgmt", async (req, res) => {
     const studentssql = `SELECT * FROM student
   
     INNER JOIN course 
     ON student.courseid = course.id `;
     const [students] = await db.promise().query(studentssql);
     console.log(students[0]);
-    res.render("studentmgmt", {students});
+    res.render("studentmgmt", { students });
 })
 
-app.get("/coursemgmt", async (req,res) =>{
+app.get("/coursemgmt", async (req, res) => {
     const coursesql = `SELECT * FROM course
     INNER JOIN Modules
     ON course.id = Modules.courseid WHERE course.title = ?`;
     const params = "BSc Computer Science";
     const [courses] = await db.promise().query(coursesql, [params]);
     console.log(courses[0]);
-    res.render("coursemgmt", {courses});
+    res.render("coursemgmt", { courses });
 });
 
-app.get("/officermgmt", async (req,res) =>{
+app.get("/officermgmt", async (req, res) => {
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
-    res.render("officermgmt", {courses});
+    res.render("officermgmt", { courses });
 });
+
+app.post("/addofficer", async (req, res) => {
+    const addOfficerForm = { ...req.body };
+    const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
+VALUES (?, ?, ?, ?, ?)`
+
+    const params = [
+    addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
+    addOfficerForm.officerEmail,
+    addOfficerForm.officerRole,
+    addOfficerForm.officerPassword];
+
+    try {
+        const [result] = await db.promise().query(insertOfficerSQL, params)
+        console.log(result);
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+});
+
 
 
 

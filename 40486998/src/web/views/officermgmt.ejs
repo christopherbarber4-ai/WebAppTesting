@@ -25,18 +25,20 @@
 
     <div class="officerForm">
         <form action="/addofficer" method="post" >
-
             <div>
                 First Name: <input name="officerFirstName" required>
             </div>
             <div>
-                Last Name: <input name="OfficerLastName" required>
+                Last Name: <input name="officerLastName" required>
             </div>
             <div>
                 Email: <input name="officerEmail" required>
             </div>
             <div>
-                Role: <input name="officerRole" required>
+                Role: <select name="officerRole" required>
+                    <option value ="admin"> Admin </option>
+                    <option value= "officer"> Officer</option>
+                </select>
             </div>
             <div>
                 Password: <input name="officerPassword" required>
