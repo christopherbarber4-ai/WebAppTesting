@@ -1,8 +1,15 @@
 
-
+/*
 .loginForm{
 
     padding: 100px 50px;
     margin: 125px 150px;
+
+}
+
+
+.officerForm{
+    padding: 0;
+    border: 0;
 
 }

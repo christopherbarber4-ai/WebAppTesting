@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="myuis.css">
   <title>Officer Management</title>
 </head>
 
@@ -22,7 +23,8 @@
 
     <p>To create a new officer, please fill out all fields...</p>
 
-        <form action="/addofficer" method="post">
+    <div class="officerForm">
+        <form action="/addofficer" method="post" >
 
             <div>
                 First Name: <input name="officerFirstName" required>
@@ -41,18 +43,17 @@
             </div>
             <div>
                 Course: <select name="OfficerCourseName" required> 
-                    <option value="Comedy">Comedy</option>
-                    <option value="Drama">Drama</option>
-                    <option value="Sci-Fi">Sci Fi</option>
+                    <% courses.forEach ((course) => {%>
+                    <option value="<%= course.id%>"><%= course.title%></option>
+                    <%}); %>
              </select>
             </div>
+
             <div>
-                Plot: <textarea name="plotField" required></textarea>
-            </div>
-            <div>
-               <button>Add Show</button>
+               <button>Add Officer</button>
             </div>
         </form>
+        </div>
 
 
 </body>

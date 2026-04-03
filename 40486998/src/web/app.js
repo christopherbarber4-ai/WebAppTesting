@@ -8,6 +8,8 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename); //middleware to ensure I can access static files e.g. css
+app.use(express.static(path.join(__dirname, '/public')));
+
 const PORT = 3000;
 const oneHour = 10000 * 60 * 60 * 1; // variable for cookie timeout
 
@@ -97,10 +99,13 @@ app.get("/coursemgmt", async (req,res) =>{
 });
 
 app.get("/officermgmt", async (req,res) =>{
+    const coursesql = `SELECT * FROM course`
+    const [courses] = await db.promise().query(coursesql);
+    res.render("officermgmt", {courses});
+});
 
-    res.render("officermgmt");
-})
+
 
 app.listen(PORT, () => {
     console.log(`Server is live! http://localhost:${PORT}`);
-})
+});
