@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <title>Officer Management</title>
+</head>
+
+<body>
+
+  <header>
+    <a href="/landing" class="logo">HEDclass</a>
+    <a href="#" class="button">Dashboard</a>
+    <a href="/studentmgmt" class="button">Student Management</a>
+    <a href="/officermgmt" class="button"> Officer Management </a>
+    <a href = "/coursemgmt" class="button"> Course Management</a>
+    <a href="/logout" class="button">Logout</a>
+
+  </header>
+
+    <p>To create a new officer, please fill out all fields...</p>
+
+        <form action="/addofficer" method="post">
+
+            <div>
+                First Name: <input name="officerFirstName" required>
+            </div>
+            <div>
+                Last Name: <input name="OfficerLastName" required>
+            </div>
+            <div>
+                Email: <input name="officerEmail" required>
+            </div>
+            <div>
+                Role: <input name="officerRole" required>
+            </div>
+            <div>
+                Password: <input name="officerPassword" required>
+            </div>
+            <div>
+                Course: <select name="OfficerCourseName" required> 
+                    <option value="Comedy">Comedy</option>
+                    <option value="Drama">Drama</option>
+                    <option value="Sci-Fi">Sci Fi</option>
+             </select>
+            </div>
+            <div>
+                Plot: <textarea name="plotField" required></textarea>
+            </div>
+            <div>
+               <button>Add Show</button>
+            </div>
+        </form>
+
+
+</body>
+
+</html>

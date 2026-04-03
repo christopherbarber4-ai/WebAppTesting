@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <title>Student Management</title>
+</head>
+
+<body>
+
+  <header>
+    <a href="/landing" class="logo">HEDclass</a>
+    <a href="#" class="button">Dashboard</a>
+    <a href="/studentmgmt" class="button">Student Management</a>
+    <a href="/officermgmt" class="button"> Officer Management </a>
+    <a href = "/coursemgmt" class="button"> Course Management</a>
+    <a href="/logout" class="button">Logout</a>
+
+  </header>
+
+  <h3> Students</h3>
+         <p class="h5">
+            Data:
+        </p>
+        <hr>
+       
+    <table>
+    <tbody>      
+    <%students.forEach((student)=>{ %>
+    <tr>
+ 
+       <td> first name: <%= student.firstName %></td>
+        <td> second name: <%= student.lastName %> <br></td>
+        <td>  email: <%= student.email %><br></td>
+      <td>   course: <%= student.courseID %><br></td>
+      <td> course title: <%= student.title %></td>
+
+    </tr>
+ <% }); %>
+  </tbody>
+</table>
+
+
+
+
+
+</body>
+
+</html>

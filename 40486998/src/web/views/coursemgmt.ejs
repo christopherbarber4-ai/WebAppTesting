@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
-  <title>HedClass</title>
+  <title>Course Management</title>
 </head>
 
 <body>
@@ -19,10 +19,27 @@
     <a href="/logout" class="button">Logout</a>
 
   </header>
-<h2> hello</h2>
+  <h3> Courses</h3>
+         <p class="h5">
+            Data:
+        </p>
+        <hr>
+       
+    <table>
+    <tbody>      
+    <%courses.forEach((course)=>{ %>
+    <tr>
+ 
+    <td> Modules: <%= course.moduleName %> </td>
+    <td> Course Name: <%= course.title %></td>
+    <td> Course Credit Worth: <%= course.creditValue %></td>
+    <td> Module Year: <%= course.year %></td>
 
 
-
+    </tr>
+ <% }); %>
+  </tbody>
+</table>
 </body>
 
 </html>

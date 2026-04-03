@@ -20,6 +20,8 @@ const users = [{
     passW: "2234",
 }];
 
+//SESSIONS SET UP
+
 app.use(sessions({ // creates a session object on the node server
     secret: 'cbarberproject',
     saveUninitialized: true,
@@ -27,13 +29,23 @@ app.use(sessions({ // creates a session object on the node server
     resave: false
 }));
 
+//DB SET UP
+
+
+const db = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: 'root', // 'root' if MAMP Mac OS
+    database: 'hedclass',  //DB name
+    port: '8889', //8889 if MAMP Mac OS
+});
+
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
 
 
 app.get("/", (req, res) => {
-
     res.render("login");
 })
 
@@ -42,16 +54,18 @@ app.post("/login", async (req, res) => {
     const userPass = req.body.password;
     req.session.authen = userEmail; 
 
-    if (req.session.authen) { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
-        res.render("landing");
+    res.redirect("/landing");
+
+   /* if (req.session.authen) { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
+        res.render("landing", {students});
     } else {
         res.redirect("/");
     }
-
+*/
 
 });
 
-app.get("/landing", (req, res) => {
+app.get("/landing", async (req, res) => {
 
     res.render("landing");
 })
@@ -60,6 +74,31 @@ app.get("/logout", (req, res) => {
     req.session.destroy();
     res.render("loggedout");
 
+})
+
+app.get("/studentmgmt", async (req,res) => {
+    const studentssql = `SELECT * FROM student
+  
+    INNER JOIN course 
+    ON student.courseid = course.id `;
+    const [students] = await db.promise().query(studentssql);
+    console.log(students[0]);
+    res.render("studentmgmt", {students});
+})
+
+app.get("/coursemgmt", async (req,res) =>{
+    const coursesql = `SELECT * FROM course
+    INNER JOIN Modules
+    ON course.id = Modules.courseid WHERE course.title = ?`;
+    const params = "BSc Computer Science";
+    const [courses] = await db.promise().query(coursesql, [params]);
+    console.log(courses[0]);
+    res.render("coursemgmt", {courses});
+});
+
+app.get("/officermgmt", async (req,res) =>{
+
+    res.render("officermgmt");
 })
 
 app.listen(PORT, () => {
