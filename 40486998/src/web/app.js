@@ -224,7 +224,8 @@ app.post ("/editstudent", async (req,res) =>{
 
 //logic for auto classification
 
-app.get("/awardcalculation", async (req, res) => {
+//VIEW ALL RESULTS
+app.get("/allresults", async (req, res) => {
     const resultsSQL = `SELECT * FROM results
     INNER JOIN student 
     ON results.studentId = student.id
@@ -233,7 +234,21 @@ app.get("/awardcalculation", async (req, res) => {
     const [totalResults] = await db.promise().query(resultsSQL);
     console.log(totalResults);
    
-    res.render("awardcalc", {totalResults});
+    res.render("allresults", {totalResults});
+});
+
+app.get("/updateresults/:eid", async (req, res) => {
+    const studentId = req.params.eid;
+    const resultsSQL = `SELECT * FROM results
+    INNER JOIN student 
+    ON results.studentId = student.id
+    INNER JOIN modules 
+    ON results.moduleID = modules.id WHERE student.id = ?`
+    const [totalResults] = await db.promise().query(resultsSQL,[studentId]);
+    console.log(totalResults);
+    console.log(studentId);
+   
+    res.render("studentresults", {totalResults});
 });
 
 
