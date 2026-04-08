@@ -13,6 +13,9 @@ app.use(express.static(path.join(__dirname, '/public')));
 const PORT = 3000;
 const oneHour = 10000 * 60 * 60 * 1; // variable for cookie timeout
 
+const RESITMAX = 40;
+const YEARONEPASS = 4800;
+
 const users = [{
     uName: "christopher.barber4@gmail.com",
     passW: "123",
@@ -86,10 +89,9 @@ app.get("/studentmgmt", async (req, res) => {
     ON student.awardid = award.id `;
     const [students] = await db.promise().query(studentssql);
 
-    const coursesql = `SELECT * FROM course`
-    const [courses] = await db.promise().query(coursesql);
 
-    res.render("studentmgmt", { students, courses });
+
+    res.render("studentmgmt", { students });
 });
 
 app.post("/addstudent", async (req, res) => {
@@ -148,13 +150,6 @@ app.get("/coursemgmt", async (req, res) => {
     res.render("coursemgmt", { courses });
 });
 
-app.get("/studentmgmt", async (req, res) => {
-    const userSQL = `SELECT * FROM systemuser`
-    const [users] = await db.promise().query(userSQL);
-    const coursesql = `SELECT * FROM course`
-    const [courses] = await db.promise().query(coursesql);
-    res.render("studentmgmt", { courses, users });
-});
 
 app.post("/addstudent", async (req, res) => {
     const addStudentForm = { ...req.body };
@@ -248,14 +243,14 @@ app.get("/updateresults/:eid", async (req, res) => {
 
 
     const coursesql = `SELECT modules.id AS moduleID, modules.moduleName, modules.creditValue, modules.year
-FROM student
-INNER JOIN course ON student.courseID = course.id
-INNER JOIN modules ON modules.courseID = course.id
-WHERE student.id = ?`;
+            FROM student
+            INNER JOIN course ON student.courseID = course.id
+            INNER JOIN modules ON modules.courseID = course.id
+            WHERE student.id = ?`;
 
     const [courses] = await db.promise().query(coursesql, [studentId]);
-   console.log(courses[0])
-   console.log(totalResults)
+    console.log(courses[0])
+    console.log(totalResults)
     res.render("studentresults", { totalResults, courses });
 });
 
@@ -270,14 +265,14 @@ app.post("/addresult", async (req, res) => {
         addResultForm.moduleScore,
         addResultForm.isResit
         ];
-   
+
 
     try {
         const [result] = await db.promise().query(insertResultSQL, params)
         console.log(result);
-             console.log(req.body)
-             console.log(result)
-          
+        console.log(req.body)
+        console.log(result)
+
         res.send(`<H2> New result succesfully added </h2> <br>
             Student ${addResultForm.studentId} has been updated
                 click <a href = "/studentmgmt"> here </a> to return to student management `);
@@ -285,6 +280,104 @@ app.post("/addresult", async (req, res) => {
         res.status(500).json(error);
         console.log(error);
     }
+
+});
+
+app.post("/updateClassification", async (req, res) => {
+
+    const calcYearScore = function (scores) {
+        return number * number;
+    };
+
+
+    const studentResultsSql = `SELECT * FROM Results
+    INNER JOIN student
+    ON results.studentId = student.id 
+    INNER JOIN modules
+    ON results.moduleID = modules.id
+
+    WHERE student.id = ? `;
+    const params = 1;
+
+    try {
+        const [results] = await db.promise().query(studentResultsSql, params)
+        console.log(results)
+        console.log(results.length);
+
+
+        let yearOneResults = [];
+        let yearTwoResults = [];
+        let yearThreeResults = [];
+
+        const cleanedResults = new Map();
+        results.forEach((result) => {
+            if (!cleanedResults.has(result.moduleID) || result.resit === 1) {
+                cleanedResults.set(result.moduleID, result);
+            }
+        });
+        const singleResults = Array.from(cleanedResults.values());
+
+        singleResults.forEach((result) => {
+            if (result.resit === 1 && result.score > 40) {
+                result.score = RESITMAX;
+            } else {
+                result.score = result.score;
+            }
+            switch (result.year) {
+                case "Y1":
+                    if (result.score < 40) {
+                        yearOneResults.push("FAIL");
+                    } else {
+                        yearOneResults.push(result.score * result.creditValue);
+                    }
+                    break;
+                case "Y2":
+                    yearTwoResults.push(result.score * result.creditValue);
+                    break;
+                case "Y3":
+                    yearThreeResults.push(result.score * result.creditValue);
+                    break;
+
+            }
+        });
+        console.log(yearOneResults);
+        console.log(yearTwoResults);
+        console.log(yearThreeResults);
+        let yearOneFail = false;
+
+        if (yearOneResults.includes("FAIL")) {
+            yearOneFail = true;
+        }
+
+
+        if (!yearOneFail) {
+            let yearTwoSum = 0;
+            yearTwoResults.forEach((result) =>
+                yearTwoSum += result);
+            let yearTwoFinal = (yearTwoSum / 120) * 0.30;
+            console.log(yearTwoFinal);
+
+            let yearThreeSum = 0;
+            yearThreeResults.forEach((result) =>
+                yearThreeSum += result);
+            let yearThreeFinal = (yearThreeSum / 120) * 0.70;
+            console.log(yearThreeFinal);
+
+            let finalClassification = yearTwoFinal + yearThreeFinal;
+            console.log(finalClassification);
+            res.send(`<h2> Classification achieved: ${finalClassification}</h2>`);
+        }
+        else {
+            console.log("Student did not pass y1");
+        }
+
+
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+
 
 });
 

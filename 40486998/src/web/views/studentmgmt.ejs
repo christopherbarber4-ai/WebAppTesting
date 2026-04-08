@@ -37,7 +37,7 @@
       <td>  <b> course:</b> <%= student.courseID %><br></td>
       <td> <b>course title:</b> <%= student.title %></td>
       <td> <b>award information: </b> <%=student.classification%></td>
-      <td> <a href = "/updateresults/<%=student.id%>"> View Award Information </a></td>
+      <td> <a href = "/updateresults/<%=student.id%>"> View Results Information </a></td>
       <td> <a href="/editstudent/<%=student.id%>"> Edit </a></td>
 
     </tr>
@@ -68,9 +68,9 @@
             </div>
             <div>
                 Course: <select name="studentCourseName" required>
-                    <% courses.forEach ((course)=> {%>
-                        <option value="<%= course.id%>">
-                            <%= course.title%>
+                    <% students.forEach ((student)=> {%>
+                        <option value="<%= student.courseID%>">
+                            <%= student.title%>
                         </option>
                         <%}); %>
                 </select>
