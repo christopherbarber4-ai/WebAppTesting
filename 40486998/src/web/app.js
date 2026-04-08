@@ -58,7 +58,7 @@ app.post("/login", async (req, res) => {
 
     res.redirect("/landing");
 
-    /* if (req.session.authen) { //update this so that there are 2 routes - 1 for class officer and 1 for class admin. default landing for class officer
+    /* if (req.session.authen) { //update this so that there are 2 routes - 1 for class student and 1 for class admin. default landing for class student
          res.render("landing", {students});
      } else {
          res.redirect("/");
@@ -85,8 +85,34 @@ app.get("/studentmgmt", async (req, res) => {
     INNER JOIN award
     ON student.awardid = award.id `;
     const [students] = await db.promise().query(studentssql);
-    console.log(students[0]);
-    res.render("studentmgmt", { students });
+    
+    const coursesql = `SELECT * FROM course`
+    const [courses] = await db.promise().query(coursesql);
+
+    res.render("studentmgmt", { students, courses });
+});
+
+app.post("/addstudent", async (req, res) => {
+    const addStudentForm  = { ...req.body };
+    const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
+VALUES (?, ?, ?, ?, ?)`
+    const params = [
+    addStudentForm.studentFirstName, addStudentForm.studentLastName,
+    addStudentForm.studentEmail,
+    addStudentForm.studentCourseName,
+    addStudentForm.graduationYear]
+    ;
+
+    try {
+        const [result] = await db.promise().query(insertStudentSQL, params)
+        console.log(result);
+            res.send(`<H2> New user succesfully added </h2> <br> 
+                click <a href = "/studentmgmt"> here </a> to return to student management `);
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
 });
 
 // get request when selecting edit from the Student Management page
@@ -94,16 +120,21 @@ app.get("/editstudent/:eid", async (req, res) =>{
     //const adminId <---- Need to add in authorisation;
     const studentId = req.params.eid;
 
+    const singleStudentSQL = `SELECT * FROM student
+    INNER JOIN course 
+    ON student.courseid = course.id
+    INNER JOIN award
+    ON student.awardid = award.id WHERE student.id = ? `;
+    const [studentParams] = await db.promise().query(singleStudentSQL,[studentId]);
+    res.render("studentupdate", {studentParams});
+});
 
-    const singleStudentSQL = `SELECT * FROM student WHERE id = ?`
-    const [student] = await db.promise().query(singleStudentSQL,[studentId]);
-
+app.get("/officermgmt", async (req, res) => {
+    const userSQL = `SELECT * FROM systemuser`
+    const [users] = await db.promise().query(userSQL);
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
-
-    const awardsql = `SELECT * FROM award`
-    const [awards] = await db.promise().query(awardsql);
-    res.render("studentupdate", {student, courses, awards});
+    res.render("officermgmt", { courses, users });
 });
 
 
@@ -117,29 +148,29 @@ app.get("/coursemgmt", async (req, res) => {
     res.render("coursemgmt", { courses });
 });
 
-app.get("/officermgmt", async (req, res) => {
+app.get("/studentmgmt", async (req, res) => {
     const userSQL = `SELECT * FROM systemuser`
     const [users] = await db.promise().query(userSQL);
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
-    res.render("officermgmt", { courses, users });
+    res.render("studentmgmt", { courses, users });
 });
 
-app.post("/addofficer", async (req, res) => {
-    const addOfficerForm = { ...req.body };
-    const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
+app.post("/addstudent", async (req, res) => {
+    const addStudentForm = { ...req.body };
+    const insertstudentSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
 VALUES (?, ?, ?, ?, ?)`
     const params = [
-    addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
-    addOfficerForm.officerEmail,
-    addOfficerForm.officerRole,
-    addOfficerForm.officerPassword];
+    addStudentForm.studentFirstName, addStudentForm.studentLastName,
+    addStudentForm.studentEmail,
+    addStudentForm.studentRole,
+    addStudentForm.studentPassword];
 
     try {
-        const [result] = await db.promise().query(insertOfficerSQL, params)
+        const [result] = await db.promise().query(insertstudentSQL, params)
         console.log(result);
             res.send(`<H2> New user succesfully added </h2> <br> 
-                click <a href = "/officermgmt"> here </a> to return to user management `);
+                click <a href = "/studentmgmt"> here </a> to return to user management `);
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
@@ -147,40 +178,40 @@ VALUES (?, ?, ?, ?, ?)`
 
 });
 
-app.get("/editofficer/:eid", async (req, res) =>{
+app.get("/editstudent/:eid", async (req, res) =>{
     //const adminId <---- Need to add in authorisation;
-    const officerId = req.params.eid;
-    const singleOfficerSQL = `SELECT * FROM systemuser WHERE id = ?`
-    const [officer] = await db.promise().query(singleOfficerSQL,[officerId]);
+    const studentId = req.params.eid;
+    const singlestudentSQL = `SELECT * FROM systemuser WHERE id = ?`
+    const [student] = await db.promise().query(singlestudentSQL,[studentId]);
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
 
-    res.render("officerupdate", {officer, courses});
+    res.render("studentupdate", {student, courses});
 });
 
-app.post ("/editofficer", async (req,res) =>{
-    const updateOfficerForm = {...req.body};
+app.post ("/editstudent", async (req,res) =>{
+    const updatestudentForm = {...req.body};
     const updateSQL = `UPDATE SystemUser SET firstName = ?, lastName = ?, 
     email = ?, role = ?
     WHERE id = ?`;
-    const updateParams = [updateOfficerForm.officerFirstName, 
-                        updateOfficerForm.officerLastName, 
-                        updateOfficerForm.officerEmail, 
-                        updateOfficerForm.officerRole,
-                        updateOfficerForm.officerid]
+    const updateParams = [updatestudentForm.studentFirstName, 
+                        updatestudentForm.studentLastName, 
+                        updatestudentForm.studentEmail, 
+                        updatestudentForm.studentRole,
+                        updatestudentForm.studentid]
                         
     try{    
         const [result] = await db.promise().query(updateSQL,updateParams);
         console.log(result);
         res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
-            ${updateOfficerForm.officerid} has been updated to reflect:
+            ${updatestudentForm.studentid} has been updated to reflect:
             <ul>
-            <li> First Name: ${updateOfficerForm.officerFirstName}</li>
-            <li> Last Name: ${updateOfficerForm.officerLastName}</li>
-            <li> Email Address: ${updateOfficerForm.officerEmail}</li>
-            <li> Role: ${updateOfficerForm.officerRole}</li>
+            <li> First Name: ${updatestudentForm.studentFirstName}</li>
+            <li> Last Name: ${updatestudentForm.studentLastName}</li>
+            <li> Email Address: ${updatestudentForm.studentEmail}</li>
+            <li> Role: ${updatestudentForm.studentRole}</li>
             </ul> <br> 
-                Please click <a href = "/officermgmt"> here </a> to return to user
+                Please click <a href = "/studentmgmt"> here </a> to return to user
                 management `)
 
     } catch (error){
@@ -189,7 +220,21 @@ app.post ("/editofficer", async (req,res) =>{
     }
 
 
-})
+});
+
+//logic for auto classification
+
+app.get("/awardcalculation", async (req, res) => {
+    const resultsSQL = `SELECT * FROM results
+    INNER JOIN student 
+    ON results.studentId = student.id
+    INNER JOIN modules 
+    ON results.moduleID = modules.id`
+    const [totalResults] = await db.promise().query(resultsSQL);
+    console.log(totalResults);
+   
+    res.render("awardcalc", {totalResults});
+});
 
 
 

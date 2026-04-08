@@ -26,7 +26,10 @@
             User email address: <input type="text" name="officerEmail" value="<%=officer[0].email %>">
         </div>
         <div>
-            User Role: <input type="text" name="officerRole" value="<%=officer[0].role %>">
+            User Role: <select name="officerRole" value="<%=officer[0].role %>">
+                    <option value="admin"> Admin </option>
+                    <option value="officer"> Officer</option>
+                </select>
         </div>
         <div>
             User Course: <select name="OfficerCourseName" required>

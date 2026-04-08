@@ -11,15 +11,15 @@
 
 <body>
 
-    <header>
-        <a href="/landing" class="logo">HEDclass</a>
-        <a href="#" class="button">Dashboard</a>
-        <a href="/studentmgmt" class="button">Student Management</a>
-        <a href="/officermgmt" class="button"> Officer Management </a>
-        <a href="/coursemgmt" class="button"> Course Management</a>
-        <a href="/logout" class="button">Logout</a>
+  <header>
+    <a href="/landing" class="logo">HEDclass</a>
+    <a href="#" class="button">Dashboard</a>
+    <a href="/studentmgmt" class="button">Student Management</a>
+    <a href="/officermgmt" class="button"> Officer Management </a>
+    <a href = "/coursemgmt" class="button"> Course Management</a>
+    <a href="/logout" class="button">Logout</a>
 
-    </header>
+  </header>
 
     <table>
         <tbody>
@@ -28,9 +28,9 @@
 
                     <td> <b>first name:</b> <%= user.firstName %>
                     </td>
-                    <td> second name: <%= user.lastName %> <br></td>
-                    <td> email: <%= user.email %><br></td>
-                    <td> course: <%= user.role %><br></td>
+                    <td> <b>second name:</b> <%= user.lastName %> <br></td>
+                    <td> <b>email:</b> <%= user.email %><br></td>
+                    <td> <b>course:</b> <%= user.role %><br></td>
                     <td> <a href="/editofficer/<%=user.id%>"> Edit </a></td>
 
 

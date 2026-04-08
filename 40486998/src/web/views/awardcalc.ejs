@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <title>Award Calc</title>
+</head>
+
+<body>
+
+  <header>
+    <a href="/landing" class="logo">HEDclass</a>
+    <a href="#" class="button">Dashboard</a>
+    <a href="/studentmgmt" class="button">Student Management</a>
+    <a href="/officermgmt" class="button"> Officer Management </a>
+    <a href = "/coursemgmt" class="button"> Course Management</a>
+    <a href="/logout" class="button">Logout</a>
+
+  </header>
+    <table>
+        <tbody>
+            <%totalResults.forEach((result)=>{ %>
+                <tr>
+                    <td> <b>First name:</b> <%= result.firstName %> <br></td>
+                    <td> <b>Second name:</b> <%= result.lastName %> <br></td>
+                    <td> <b>Email:</b> <%= result.email %> <br></td>
+                    <td> <b>Module Name:</b> <%= result.moduleName %> <br></td>
+                    <td> <b>Module Id:</b> <%= result.moduleID %> <br></td>
+                    <td> <b>Credit Value:</b> <%= result.creditValue %> <br></td>
+                    <td> <b>Score:</b> <%= result.score %> <br></td>
+                    <td> <b>Resit?:</b> <% if ( result.resit === 1){ %>
+                      Yes <% } 
+                        else {%> No <%
+
+                    } %><br></td>
+                </tr>
+                <% }); %>
+        </tbody>
+    </table>
+
+
+
+</body>
+
+</html>

@@ -14,35 +14,27 @@
     <form action="/editstudent" method="POST">
         <p>
         <div>
-            User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
+            User id: <input type="text" name="studentid" readonly value="<%=studentParams[0].id %>">
         </div>
         <div>
-            Student First Name: <input type="text" name="studentFirstName" value="<%=student[0].firstName %>">
+            Student First Name: <input type="text" name="studentFirstName" value="<%=studentParams[0].firstName %>">
         </div>
         <div>
-            Student Last Name: <input type="text" name="studentLastName" value="<%=student[0].lastName %>">
+            Student Last Name: <input type="text" name="studentLastName" value="<%=studentParams[0].lastName %>">
         </div>
         <div>
-            Student email address: <input type="text" name="studentEmail" value="<%=student[0].email %>">
+            Student email address: <input type="text" name="studentEmail" value="<%=studentParams[0].email %>">
         </div>
         <div>
-            Graduation Year: <input type="text" name="studentGradYr" value="<%=student[0].graduationyearID %>">
+            Graduation Year: <input type="text" name="studentGradYr" value="<%=studentParams[0].graduationYear %>">
         </div>
         <div>
-            Student Award: <input type="text" name="studentAward" value="<%=student[0].graduationyearID %>">
+            Student Award: <input type="text" name="studentAward" value="<%=studentParams[0].classification %>">
         </div>
                 <div>
-            Student Award Classification: <input type="text" name="studentAward" value="<%=student[0].classificationStatus %>">
+            Student Award Classification: <input type="text" name="studentAward" value="<%=studentParams[0].classificationStatus %>">
         </div>
-        <div>
-            Student Course: <select name="studentCourseName" required>
-                <% courses.forEach ((course)=> {%>
-                    <option value="<%= course.id%>">
-                        <%= course.title%>
-                    </option>
-                    <%}); %>
-            </select>
-        </div>
+
 
 
 

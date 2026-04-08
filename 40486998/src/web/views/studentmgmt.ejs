@@ -43,6 +43,43 @@
  <% }); %>
   </tbody>
 </table>
+  <p>To create a new Student, please fill out all fields...</p>
+
+    <div class="studentForm">
+        <form action="/addstudent" method="POST">
+            <div>
+                First Name: <input name="studentFirstName" required>
+            </div>
+            <div>
+                Last Name: <input name="studentLastName" required>
+            </div>
+            <div>
+                Email: <input name="studentEmail" required>
+            </div>
+            <div>
+                Graduation Year: <select name="graduationYear" required>
+                    <option value="25/26"> 25/26 </option>
+                    <option value="26/27"> 26/27</option>
+                    <option value="27/28"> 27/28</option>
+
+                </select>
+                
+            </div>
+            <div>
+                Course: <select name="studentCourseName" required>
+                    <% courses.forEach ((course)=> {%>
+                        <option value="<%= course.id%>">
+                            <%= course.title%>
+                        </option>
+                        <%}); %>
+                </select>
+            </div>
+
+            <div>
+                <button>Add student</button>
+            </div>
+        </form>
+    </div>
 
 
 
