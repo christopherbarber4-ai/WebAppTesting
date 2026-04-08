@@ -85,7 +85,7 @@ app.get("/studentmgmt", async (req, res) => {
     INNER JOIN award
     ON student.awardid = award.id `;
     const [students] = await db.promise().query(studentssql);
-    
+
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
 
@@ -93,20 +93,20 @@ app.get("/studentmgmt", async (req, res) => {
 });
 
 app.post("/addstudent", async (req, res) => {
-    const addStudentForm  = { ...req.body };
+    const addStudentForm = { ...req.body };
     const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
 VALUES (?, ?, ?, ?, ?)`
     const params = [
-    addStudentForm.studentFirstName, addStudentForm.studentLastName,
-    addStudentForm.studentEmail,
-    addStudentForm.studentCourseName,
-    addStudentForm.graduationYear]
-    ;
+        addStudentForm.studentFirstName, addStudentForm.studentLastName,
+        addStudentForm.studentEmail,
+        addStudentForm.studentCourseName,
+        addStudentForm.graduationYear]
+        ;
 
     try {
         const [result] = await db.promise().query(insertStudentSQL, params)
         console.log(result);
-            res.send(`<H2> New user succesfully added </h2> <br> 
+        res.send(`<H2> New user succesfully added </h2> <br> 
                 click <a href = "/studentmgmt"> here </a> to return to student management `);
     } catch (error) {
         res.status(500).json(error);
@@ -116,7 +116,7 @@ VALUES (?, ?, ?, ?, ?)`
 });
 
 // get request when selecting edit from the Student Management page
-app.get("/editstudent/:eid", async (req, res) =>{
+app.get("/editstudent/:eid", async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const studentId = req.params.eid;
 
@@ -125,8 +125,8 @@ app.get("/editstudent/:eid", async (req, res) =>{
     ON student.courseid = course.id
     INNER JOIN award
     ON student.awardid = award.id WHERE student.id = ? `;
-    const [studentParams] = await db.promise().query(singleStudentSQL,[studentId]);
-    res.render("studentupdate", {studentParams});
+    const [studentParams] = await db.promise().query(singleStudentSQL, [studentId]);
+    res.render("studentupdate", { studentParams });
 });
 
 app.get("/officermgmt", async (req, res) => {
@@ -161,15 +161,15 @@ app.post("/addstudent", async (req, res) => {
     const insertstudentSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
 VALUES (?, ?, ?, ?, ?)`
     const params = [
-    addStudentForm.studentFirstName, addStudentForm.studentLastName,
-    addStudentForm.studentEmail,
-    addStudentForm.studentRole,
-    addStudentForm.studentPassword];
+        addStudentForm.studentFirstName, addStudentForm.studentLastName,
+        addStudentForm.studentEmail,
+        addStudentForm.studentRole,
+        addStudentForm.studentPassword];
 
     try {
         const [result] = await db.promise().query(insertstudentSQL, params)
         console.log(result);
-            res.send(`<H2> New user succesfully added </h2> <br> 
+        res.send(`<H2> New user succesfully added </h2> <br> 
                 click <a href = "/studentmgmt"> here </a> to return to user management `);
     } catch (error) {
         res.status(500).json(error);
@@ -178,30 +178,30 @@ VALUES (?, ?, ?, ?, ?)`
 
 });
 
-app.get("/editstudent/:eid", async (req, res) =>{
+app.get("/editstudent/:eid", async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const studentId = req.params.eid;
     const singlestudentSQL = `SELECT * FROM systemuser WHERE id = ?`
-    const [student] = await db.promise().query(singlestudentSQL,[studentId]);
+    const [student] = await db.promise().query(singlestudentSQL, [studentId]);
     const coursesql = `SELECT * FROM course`
     const [courses] = await db.promise().query(coursesql);
 
-    res.render("studentupdate", {student, courses});
+    res.render("studentupdate", { student, courses });
 });
 
-app.post ("/editstudent", async (req,res) =>{
-    const updatestudentForm = {...req.body};
+app.post("/editstudent", async (req, res) => {
+    const updatestudentForm = { ...req.body };
     const updateSQL = `UPDATE SystemUser SET firstName = ?, lastName = ?, 
     email = ?, role = ?
     WHERE id = ?`;
-    const updateParams = [updatestudentForm.studentFirstName, 
-                        updatestudentForm.studentLastName, 
-                        updatestudentForm.studentEmail, 
-                        updatestudentForm.studentRole,
-                        updatestudentForm.studentid]
-                        
-    try{    
-        const [result] = await db.promise().query(updateSQL,updateParams);
+    const updateParams = [updatestudentForm.studentFirstName,
+    updatestudentForm.studentLastName,
+    updatestudentForm.studentEmail,
+    updatestudentForm.studentRole,
+    updatestudentForm.studentid]
+
+    try {
+        const [result] = await db.promise().query(updateSQL, updateParams);
         console.log(result);
         res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
             ${updatestudentForm.studentid} has been updated to reflect:
@@ -214,8 +214,8 @@ app.post ("/editstudent", async (req,res) =>{
                 Please click <a href = "/studentmgmt"> here </a> to return to user
                 management `)
 
-    } catch (error){
-               res.status(500).json(error);
+    } catch (error) {
+        res.status(500).json(error);
         console.log(error);
     }
 
@@ -234,7 +234,7 @@ app.get("/resultsmgmt", async (req, res) => {
     const [totalResults] = await db.promise().query(resultsSQL);
     console.log(totalResults);
 
-    res.render("resultsmgmt", {totalResults});
+    res.render("resultsmgmt", { totalResults });
 });
 
 app.get("/updateresults/:eid", async (req, res) => {
@@ -244,20 +244,48 @@ app.get("/updateresults/:eid", async (req, res) => {
     ON results.studentId = student.id
     INNER JOIN modules 
     ON results.moduleID = modules.id WHERE student.id = ?`;
-    const [totalResults] = await db.promise().query(resultsSQL,[studentId]);
-    console.log(totalResults);
-    console.log(studentId);
+    const [totalResults] = await db.promise().query(resultsSQL, [studentId]);
 
-    const coursesql = `SELECT * FROM student
-    INNER JOIN course
-    ON student.courseID = course.id
-    INNER JOIN modules
-    ON modules.courseID = course.id WHERE student.id = ?`;
-    
+
+    const coursesql = `SELECT modules.id AS moduleID, modules.moduleName, modules.creditValue, modules.year
+FROM student
+INNER JOIN course ON student.courseID = course.id
+INNER JOIN modules ON modules.courseID = course.id
+WHERE student.id = ?`;
+
     const [courses] = await db.promise().query(coursesql, [studentId]);
+   console.log(courses[0])
+   console.log(totalResults)
+    res.render("studentresults", { totalResults, courses });
+});
 
+app.post("/addresult", async (req, res) => {
+    const addResultForm = { ...req.body };
+    const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
+    VALUES (?,?,?,?,?)`;
+    const params =
+        [addResultForm.studentId,
+        addResultForm.courseId,
+        addResultForm.studentModule,
+        addResultForm.moduleScore,
+        addResultForm.isResit
+        ];
+   
 
-    res.render("studentresults", {totalResults, courses});
+    try {
+        const [result] = await db.promise().query(insertResultSQL, params)
+        console.log(result);
+             console.log(req.body)
+             console.log(result)
+          
+        res.send(`<H2> New result succesfully added </h2> <br>
+            Student ${addResultForm.studentId} has been updated
+                click <a href = "/studentmgmt"> here </a> to return to student management `);
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
 });
 
 
