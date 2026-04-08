@@ -76,17 +76,36 @@ app.get("/logout", (req, res) => {
     req.session.destroy();
     res.render("loggedout");
 
-})
+});
 
 app.get("/studentmgmt", async (req, res) => {
     const studentssql = `SELECT * FROM student
-  
     INNER JOIN course 
-    ON student.courseid = course.id `;
+    ON student.courseid = course.id
+    INNER JOIN award
+    ON student.awardid = award.id `;
     const [students] = await db.promise().query(studentssql);
     console.log(students[0]);
     res.render("studentmgmt", { students });
-})
+});
+
+// get request when selecting edit from the Student Management page
+app.get("/editstudent/:eid", async (req, res) =>{
+    //const adminId <---- Need to add in authorisation;
+    const studentId = req.params.eid;
+
+
+    const singleStudentSQL = `SELECT * FROM student WHERE id = ?`
+    const [student] = await db.promise().query(singleStudentSQL,[studentId]);
+
+    const coursesql = `SELECT * FROM course`
+    const [courses] = await db.promise().query(coursesql);
+
+    const awardsql = `SELECT * FROM award`
+    const [awards] = await db.promise().query(awardsql);
+    res.render("studentupdate", {student, courses, awards});
+});
+
 
 app.get("/coursemgmt", async (req, res) => {
     const coursesql = `SELECT * FROM course
@@ -141,7 +160,8 @@ app.get("/editofficer/:eid", async (req, res) =>{
 
 app.post ("/editofficer", async (req,res) =>{
     const updateOfficerForm = {...req.body};
-    const updateSQL = `UPDATE SystemUser SET firstName = ?, lastName = ?, email = ?, role = ?
+    const updateSQL = `UPDATE SystemUser SET firstName = ?, lastName = ?, 
+    email = ?, role = ?
     WHERE id = ?`;
     const updateParams = [updateOfficerForm.officerFirstName, 
                         updateOfficerForm.officerLastName, 
@@ -152,6 +172,16 @@ app.post ("/editofficer", async (req,res) =>{
     try{    
         const [result] = await db.promise().query(updateSQL,updateParams);
         console.log(result);
+        res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
+            ${updateOfficerForm.officerid} has been updated to reflect:
+            <ul>
+            <li> First Name: ${updateOfficerForm.officerFirstName}</li>
+            <li> Last Name: ${updateOfficerForm.officerLastName}</li>
+            <li> Email Address: ${updateOfficerForm.officerEmail}</li>
+            <li> Role: ${updateOfficerForm.officerRole}</li>
+            </ul> <br> 
+                Please click <a href = "/officermgmt"> here </a> to return to user
+                management `)
 
     } catch (error){
                res.status(500).json(error);

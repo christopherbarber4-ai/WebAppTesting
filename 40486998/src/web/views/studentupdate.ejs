@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+
+    <title>Edit Student</title>
+</head>
+
+<body>
+
+    <form action="/editstudent" method="POST">
+        <p>
+        <div>
+            User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
+        </div>
+        <div>
+            Student First Name: <input type="text" name="studentFirstName" value="<%=student[0].firstName %>">
+        </div>
+        <div>
+            Student Last Name: <input type="text" name="studentLastName" value="<%=student[0].lastName %>">
+        </div>
+        <div>
+            Student email address: <input type="text" name="studentEmail" value="<%=student[0].email %>">
+        </div>
+        <div>
+            Graduation Year: <input type="text" name="studentGradYr" value="<%=student[0].graduationyearID %>">
+        </div>
+                <div>
+            Student Award: <input type="text" name="studentAward" value="<%=student[0].graduationyearID %>">
+        </div>
+        <div>
+            Student Course: <select name="studentCourseName" required>
+                <% courses.forEach ((course)=> {%>
+                    <option value="<%= course.id%>">
+                        <%= course.title%>
+                    </option>
+                    <%}); %>
+            </select>
+        </div>
+
+
+
+        </p>
+        <input type="submit" value="update">
+    </form>
+
+
+</body>
+
+</html>
