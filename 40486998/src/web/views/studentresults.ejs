@@ -41,6 +41,40 @@
     </table>
 
 
+      <p>To add a new result, please fill out all fields...</p>
+
+  <div class="resultForm">
+    <form action="/addresult" method="POST">
+      <div>
+        StudentId: <input type="text" name="studentId" readonly value="<%=totalResults[0].id %>">
+      </div>
+      <div>
+        First Name: <input type="text" name="studentFirstName" readonly value="<%=totalResults[0].firstName %>"
+          required>
+      </div>
+      <div>
+        Last Name: <input type="text" name="studentLastName" readonly value="<%=totalResults[0].lastName %>" required>
+      </div>
+        <div>
+            Module Name: <select name="studentModule" required>
+                <% courses.forEach ((course)=> {%>
+                    <option value="<%= course.moduleID%>">
+                        <%= course.moduleName%>
+                    </option>
+                    <%}); %>
+            </select>
+        </div>
+
+
+
+      <div>
+        <button>Add student</button>
+      </div>
+
+
+
+
+
 
 </body>
 

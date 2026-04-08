@@ -225,7 +225,7 @@ app.post ("/editstudent", async (req,res) =>{
 //logic for auto classification
 
 //VIEW ALL RESULTS
-app.get("/allresults", async (req, res) => {
+app.get("/resultsmgmt", async (req, res) => {
     const resultsSQL = `SELECT * FROM results
     INNER JOIN student 
     ON results.studentId = student.id
@@ -233,8 +233,8 @@ app.get("/allresults", async (req, res) => {
     ON results.moduleID = modules.id`
     const [totalResults] = await db.promise().query(resultsSQL);
     console.log(totalResults);
-   
-    res.render("allresults", {totalResults});
+
+    res.render("resultsmgmt", {totalResults});
 });
 
 app.get("/updateresults/:eid", async (req, res) => {
@@ -243,12 +243,21 @@ app.get("/updateresults/:eid", async (req, res) => {
     INNER JOIN student 
     ON results.studentId = student.id
     INNER JOIN modules 
-    ON results.moduleID = modules.id WHERE student.id = ?`
+    ON results.moduleID = modules.id WHERE student.id = ?`;
     const [totalResults] = await db.promise().query(resultsSQL,[studentId]);
     console.log(totalResults);
     console.log(studentId);
-   
-    res.render("studentresults", {totalResults});
+
+    const coursesql = `SELECT * FROM student
+    INNER JOIN course
+    ON student.courseID = course.id
+    INNER JOIN modules
+    ON modules.courseID = course.id WHERE student.id = ?`;
+    
+    const [courses] = await db.promise().query(coursesql, [studentId]);
+
+
+    res.render("studentresults", {totalResults, courses});
 });
 
 
