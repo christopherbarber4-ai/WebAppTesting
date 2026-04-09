@@ -42,7 +42,7 @@
             <%= result.creditValue %> <br>
           </td>
           <td> <b>Score:</b>
-            <%= totalResults.score %> <br>
+            <%= result.score %> <br>
           </td>
           <td> <b>Resit?:</b>
             <% if (result.resit===1){ %>
@@ -102,7 +102,6 @@
       <div>
         StudentId: <input type="text" name="studentId" readonly value="<%=totalResults[0].studentId %>">
       </div>
-
       <div>
         <button>Add Classification</button>
       </div>

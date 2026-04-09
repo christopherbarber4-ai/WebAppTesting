@@ -76,6 +76,11 @@ app.get("/landing", async (req, res) => {
     res.render("landing");
 })
 
+app.get("/Dashboard", async (req, res) => {
+
+    res.render("dashboard");
+})
+
 app.get("/logout", (req, res) => {
     req.session.destroy();
     res.render("loggedout");
@@ -83,9 +88,9 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/studentmgmt", async (req, res) => {
-    const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID  FROM student
+    const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID, course.title, award.classification  FROM student
     INNER JOIN course 
-    ON student.courseid = course.id
+    ON student.courseID = course.id
     INNER JOIN award
     ON student.awardid = award.id `;
     const [students] = await db.promise().query(studentssql);
@@ -129,7 +134,7 @@ app.get("/editstudent/:eid", async (req, res) => {
 
 app.post("/editstudent", async (req, res) => {
     const updatestudentForm = { ...req.body };
-    const updateSQL = `UPDATE SystemUser SET firstName = ?, lastName = ?, 
+    const updateSQL = `UPDATE student SET firstName = ?, lastName = ?, 
     email = ?, graduationYear = ?
     WHERE id = ?`;
     const updateParams = [updatestudentForm.studentFirstName,
@@ -209,7 +214,7 @@ app.get("/viewresults/:eid", async (req, res) => {
     const [totalResults] = await db.promise().query(resultsSQL, [studentId]);
 
 
-    const coursesql = `SELECT modules.id AS moduleID, modules.moduleName, modules.creditValue, modules.year
+    const coursesql = `SELECT modules.id AS moduleID, modules.moduleName, modules.creditValue, modules.year 
             FROM student
             INNER JOIN course ON student.courseID = course.id
             INNER JOIN modules ON modules.courseID = course.id
@@ -270,7 +275,7 @@ app.post("/addclassification/", async (req, res) => {
     try {
         const [results] = await db.promise().query(resultsSQL, [studentId]);
 
-        //STEP 1 - ensure where resits, the resis result is taken forwards.
+        //STEP 1 - ensure where resits, the resit result is taken forwards.
         const cleanedResults = new Map();
         results.forEach((result) => {
             if (!cleanedResults.has(result.moduleID) || result.resit === 1) {
