@@ -1,0 +1,71 @@
+    try {
+        const [results] = await db.promise().query(studentResultsSql, params)
+        console.log(results)
+        console.log(results.length);
+
+
+        let yearOneResults = [];
+        let yearTwoResults = [];
+        let yearThreeResults = [];
+
+        const cleanedResults = new Map();
+        results.forEach((result) => {
+            if (!cleanedResults.has(result.moduleID) || result.resit === 1) {
+                cleanedResults.set(result.moduleID, result);
+            }
+        });
+        const singleResults = Array.from(cleanedResults.values());
+
+        singleResults.forEach((result) => {
+            if (result.resit === 1 && result.score > 40) {
+                result.score = RESITMAX;
+            } else {
+                result.score = result.score;
+            }
+            switch (result.year) {
+                case "Y1":
+                    if (result.score < 40) {
+                        yearOneResults.push("FAIL");
+                    } else {
+                        yearOneResults.push(result.score * result.creditValue);
+                    }
+                    break;
+                case "Y2":
+                    yearTwoResults.push(result.score * result.creditValue);
+                    break;
+                case "Y3":
+                    yearThreeResults.push(result.score * result.creditValue);
+                    break;
+
+            }
+        });
+        console.log(yearOneResults);
+        console.log(yearTwoResults);
+        console.log(yearThreeResults);
+        let yearOneFail = false;
+
+        if (yearOneResults.includes("FAIL")) {
+            yearOneFail = true;
+        }
+
+
+        if (!yearOneFail) {
+            let yearTwoSum = 0;
+            yearTwoResults.forEach((result) =>
+                yearTwoSum += result);
+            let yearTwoFinal = (yearTwoSum / 120) * 0.30;
+            console.log(yearTwoFinal);
+
+            let yearThreeSum = 0;
+            yearThreeResults.forEach((result) =>
+                yearThreeSum += result);
+            let yearThreeFinal = (yearThreeSum / 120) * 0.70;
+            console.log(yearThreeFinal);
+
+            let finalClassification = yearTwoFinal + yearThreeFinal;
+            console.log(finalClassification);
+            res.send(`<h2> Classification achieved: ${finalClassification}</h2>`);
+        }
+        else {
+            console.log("Student did not pass y1");
+        }
