@@ -191,7 +191,7 @@ app.post("/deletestudent/", async (req, res) => {
 
     res.send(`<h2> Student ${deleteStudentForm.studentid} succesfully deleted.
          </h2> `);
-})
+});
 
 
 app.get("/officermgmt", async (req, res) => {
@@ -205,17 +205,18 @@ app.get("/officermgmt", async (req, res) => {
 app.post("/addofficer", async (req, res) => {
     const addOfficerForm = { ...req.body };
     const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
-VALUES (?, ?, ?, ?, ?)`
+VALUES (?, ?, ?, ?, ?, ?)`
 
     const params = [
         addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
         addOfficerForm.officerEmail,
         addOfficerForm.officerRole,
         addOfficerForm.officerPassword,
+        addOfficerForm.officerid
     ];
 
 
-console.log(req.body)
+    console.log(req.body)
     try {
         const [insertOfficer] = await db.promise().query(insertOfficerSQL, params);
 
@@ -247,6 +248,86 @@ app.get("/editofficer/:eid", async (req, res) => {
 
     res.render("officerupdate", { officer, courses });
 });
+
+
+app.post("/editofficer", async (req, res) => {
+    const updateOfficerForm = { ...req.body };
+    const updatOfficerSQL = `UPDATE systemuser SET firstName = ?, lastName = ?, 
+    email = ?, role = ?, password = ?
+    WHERE id = ?`;
+    const updateParams = [
+    updateOfficerForm.officerFirstName,
+    updateOfficerForm.officerLastName,
+    updateOfficerForm.officerEmail,
+    updateOfficerForm.officerRole,
+    updateOfficerForm.officerPassword,
+    updateOfficerForm.officerid];
+
+    const updateMngdCourseSQL = `UPDATE managedcourses SET courseID = ?
+    WHERE id = ?`
+    const updateCoursesParams = [
+        updateOfficerForm.officerCourseName,
+        updateOfficerForm.officerid];
+
+    try {
+        const [result] = await db.promise().query(updatOfficerSQL, updateParams);
+        console.log(result);
+        const [courseUpdate] = await db.promise().query(updateMngdCourseSQL,updateCoursesParams);
+        console.log(courseUpdate);
+        res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
+            ${updateOfficerForm.officerid} has been updated to reflect:
+            <ul>
+            <li> First Name: ${updateOfficerForm.officerFirstName}</li>
+            <li> Last Name: ${updateOfficerForm.officerLastName}</li>
+            <li> Email Address: ${updateOfficerForm.officerEmail}</li>
+            <li> Role: ${updateOfficerForm.officerRole}</li>
+            <li> CourseID: ${updateOfficerForm.officerCourseName}</li>
+            </ul> <br> 
+                Please click <a href = "/officermgmt"> here </a> to return to officer
+                management `)
+
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+
+});
+
+app.get("/deleteofficer/:eid", async (req, res) => {
+    //const adminId <---- Need to add in authorisation;
+    const officerId = req.params.eid;
+    const singleofficerSQL = `SELECT * FROM systemuser WHERE id = ?`
+    const [officer] = await db.promise().query(singleofficerSQL, [officerId]);
+    console.log(officer);
+    res.render("officerdelete", { officer });
+})
+
+app.post("/deleteofficer/", async (req, res) => {
+
+    //const adminId <---- Need to add in authorisation;
+    const deleteOfficerForm = { ...req.body };
+    const deleteSingleOfficer = `DELETE FROM systemuser WHERE systemuser.id = ? `
+    const params = [deleteOfficerForm.officerid];
+
+    const updateLegacyNameSQL = `UPDATE award SET legacyApprover = (SELECT CONCAT(firstName, ' ', lastName) 
+    FROM systemuser WHERE id = ?), systemUserID = NULL WHERE award.systemUserID = ?`
+    const updateParams = [deleteOfficerForm.officerid,deleteOfficerForm.officerid];
+
+    try {
+        const[legacyName] = await db.promise().query(updateLegacyNameSQL,updateParams);
+        const [officer] = await db.promise().query(deleteSingleOfficer, [params]);
+
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+    res.send(`<h2> Officer ${deleteOfficerForm.officerid} succesfully deleted.
+         </h2>  <br>
+        Please click <a href="/officermgmt"> here </a> to return to officer management`);
+});
+
 
 
 app.get("/coursemgmt", async (req, res) => {

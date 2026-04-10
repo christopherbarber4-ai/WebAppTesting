@@ -32,6 +32,9 @@
                 </select>
         </div>
         <div>
+        User Password: <input type = "text" name="officerPassword">
+    </div>
+        <div>
             User Course: <select name="officerCourseName" required>
                 <% courses.forEach ((course)=> {%>
                     <option value="<%= course.id%>">
