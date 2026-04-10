@@ -12,7 +12,7 @@
 
   <header>
     <a href="/landing" class="logo">HEDclass</a>
-    <a href="#" class="button">Dashboard</a>
+    <a href="/dashboard" class="button">Dashboard</a>
     <a href="/studentmgmt" class="button">Student Management</a>
     <a href="/officermgmt" class="button"> Officer Management </a>
     <a href = "/coursemgmt" class="button"> Course Management</a>
@@ -20,9 +20,27 @@
     <a href="/logout" class="button">Logout</a>
 
   </header>
-<h2> hello</h2>
+<h2> WELCOME TO THE DASHBOARD!!</h2>
 
-
+        <hr>
+       
+    <table>
+    <tbody>      
+    <%uniqueCourses.forEach((course)=>{ %>
+    <tr>
+ 
+  
+    <td> Course Name: <%= course.title %></td>
+    <td> Total Number of Students: <%= studentStats[course.courseID].totalStudents %></td>
+    <td> Number of Firsts:<%= studentStats[course.courseID].gradeFirst %></td>
+    <td> Number of 2:1s: <%= studentStats[course.courseID].gradeTwoOne %></td>
+    <td> Number of 2:2s: <%= studentStats[course.courseID].gradeTwoTwo %></td>
+    <td> Number of Thirds: <%= studentStats[course.courseID].gradeThird %></td>
+    <td> Number of Fails: <%= studentStats[course.courseID].gradeFail%></td>
+    </tr>
+ <% }); %>
+  </tbody>
+</table>
 
 </body>
 

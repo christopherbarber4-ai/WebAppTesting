@@ -76,10 +76,65 @@ app.get("/landing", async (req, res) => {
     res.render("landing");
 })
 
-app.get("/Dashboard", async (req, res) => {
+app.get("/dashboard", async (req, res) => {
+    const courseDataSQL = `SELECT * FROM student
+    INNER JOIN course 
+    ON student.courseID = course.id
+    LEFT JOIN award
+    ON student.awardid = award.id `;
+    //const params = "BSc Computer Science";
+    const [stats] = await db.promise().query(courseDataSQL);
 
-    res.render("dashboard");
-})
+    console.log(stats);
+
+
+    //create new array for unique courses
+    const uniqueCourses = [];
+    stats.forEach((stat) => {
+        if (!uniqueCourses.find((courseCheck) =>
+            courseCheck.courseID === stat.courseID)) {
+            uniqueCourses.push(stat);
+        }
+    });
+
+    //create an array to house counts per course 
+    const studentStats = [];
+    stats.forEach((stat) => {
+        if (!studentStats[stat.courseID]) {
+            studentStats[stat.courseID] = {
+                totalStudents: 0,
+                gradeFirst: 0,
+                gradeTwoOne: 0,
+                gradeTwoTwo: 0,
+                gradeThird: 0,
+                gradeFail: 0
+            };
+        }
+        studentStats[stat.courseID].totalStudents++;
+
+        if (stat.classification === 'First Class Honours (1st)') {
+            studentStats[stat.courseID].gradeFirst++;
+        }
+        if (stat.classification === 'Upper Second Class (2:1)') {
+            studentStats[stat.courseID].gradeTwoOne++;
+        }
+        if (stat.classification === 'Lower Second Class (2:2)') {
+            studentStats[stat.courseID].gradeTwoTwo++;
+        }
+        if (stat.classification === 'Third Class Honours') {
+            studentStats[stat.courseID].gradeThird++;
+        }
+        if (stat.classification === 'Fail') {
+            studentStats[stat.courseID].gradeFail++;
+        }
+
+    });
+
+
+    console.log(studentStats);
+
+    res.render("dashboard", { stats, uniqueCourses, studentStats });
+});
 
 app.get("/logout", (req, res) => {
     req.session.destroy();
@@ -91,7 +146,7 @@ app.get("/studentmgmt", async (req, res) => {
     const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID, course.title, award.classification  FROM student
     INNER JOIN course 
     ON student.courseID = course.id
-    INNER JOIN award
+    LEFT JOIN award
     ON student.awardid = award.id `;
     const [students] = await db.promise().query(studentssql);
     res.render("studentmgmt", { students });
@@ -256,12 +311,12 @@ app.post("/editofficer", async (req, res) => {
     email = ?, role = ?, password = ?
     WHERE id = ?`;
     const updateParams = [
-    updateOfficerForm.officerFirstName,
-    updateOfficerForm.officerLastName,
-    updateOfficerForm.officerEmail,
-    updateOfficerForm.officerRole,
-    updateOfficerForm.officerPassword,
-    updateOfficerForm.officerid];
+        updateOfficerForm.officerFirstName,
+        updateOfficerForm.officerLastName,
+        updateOfficerForm.officerEmail,
+        updateOfficerForm.officerRole,
+        updateOfficerForm.officerPassword,
+        updateOfficerForm.officerid];
 
     const updateMngdCourseSQL = `UPDATE managedcourses SET courseID = ?
     WHERE id = ?`
@@ -272,7 +327,7 @@ app.post("/editofficer", async (req, res) => {
     try {
         const [result] = await db.promise().query(updatOfficerSQL, updateParams);
         console.log(result);
-        const [courseUpdate] = await db.promise().query(updateMngdCourseSQL,updateCoursesParams);
+        const [courseUpdate] = await db.promise().query(updateMngdCourseSQL, updateCoursesParams);
         console.log(courseUpdate);
         res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
             ${updateOfficerForm.officerid} has been updated to reflect:
@@ -312,10 +367,10 @@ app.post("/deleteofficer/", async (req, res) => {
 
     const updateLegacyNameSQL = `UPDATE award SET legacyApprover = (SELECT CONCAT(firstName, ' ', lastName) 
     FROM systemuser WHERE id = ?), systemUserID = NULL WHERE award.systemUserID = ?`
-    const updateParams = [deleteOfficerForm.officerid,deleteOfficerForm.officerid];
+    const updateParams = [deleteOfficerForm.officerid, deleteOfficerForm.officerid];
 
     try {
-        const[legacyName] = await db.promise().query(updateLegacyNameSQL,updateParams);
+        const [legacyName] = await db.promise().query(updateLegacyNameSQL, updateParams);
         const [officer] = await db.promise().query(deleteSingleOfficer, [params]);
 
     } catch (error) {
@@ -419,6 +474,8 @@ app.post("/addclassification/", async (req, res) => {
         const [results] = await db.promise().query(resultsSQL, [studentId]);
 
         //STEP 1 - ensure where resits, the resit result is taken forwards.
+        // cycles through original results and if module ID 
+        // doesnt exist or where resit is true then add to new map
         const cleanedResults = new Map();
         results.forEach((result) => {
             if (!cleanedResults.has(result.moduleID) || result.resit === 1) {
@@ -500,7 +557,7 @@ app.post("/addclassification/", async (req, res) => {
     const insertParams = [
         studentClassification,
         "In Progress",
-        3,
+        2,
     ];
 
     try {
