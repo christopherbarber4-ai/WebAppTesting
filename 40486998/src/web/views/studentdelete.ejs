@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+
+    <title>Edit Student</title>
+</head>
+
+<body>
+
+    <form action="/deletestudent" method="POST">
+        <p>
+        <div>
+            User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
+        </div>
+        <div>
+            Student First Name: <input type="text" name="studentFirstName" readonly value="<%=student[0].firstName %>">
+        </div>
+        <div>
+            Student Last Name: <input type="text" name="studentLastName" readonly value="<%=student[0].lastName %>">
+        </div>
+        <div>
+            Student email address: <input type="text" name="studentEmail" readonly value="<%=student[0].email %>">
+        </div>
+        <div>
+            Graduation Year: <input type="text" name="studentGradYr" readonly value="<%=student[0].graduationYear %>">
+        </div>
+ 
+        </p>
+        <input type="submit" value="DELETE" onclick="return confirm('Are you sure?')">
+    </form>
+
+
+</body>
+
+</html>

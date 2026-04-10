@@ -98,14 +98,14 @@ app.get("/studentmgmt", async (req, res) => {
 });
 
 app.post("/addstudent", async (req, res) => {
-    const addStudentForm = { ...req.body };
+    const addOfficerForm = { ...req.body };
     const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
 VALUES (?, ?, ?, ?, ?)`
     const params = [
-        addStudentForm.studentFirstName, addStudentForm.studentLastName,
-        addStudentForm.studentEmail,
-        addStudentForm.studentCourseName,
-        addStudentForm.graduationYear]
+        addOfficerForm.studentFirstName, addOfficerForm.studentLastName,
+        addOfficerForm.studentEmail,
+        addOfficerForm.studentCourseName,
+        addOfficerForm.graduationYear]
         ;
 
     try {
@@ -165,6 +165,33 @@ app.post("/editstudent", async (req, res) => {
 
 });
 
+app.get("/deletestudent/:eid", async (req, res) => {
+    //const adminId <---- Need to add in authorisation;
+    const studentId = req.params.eid;
+    const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
+    const [student] = await db.promise().query(singlestudentSQL, [studentId]);
+    const coursesql = `SELECT * FROM course`
+    const [courses] = await db.promise().query(coursesql);
+    res.render("studentdelete", { student, courses });
+})
+
+app.post("/deletestudent/", async (req, res) => {
+    //const adminId <---- Need to add in authorisation;
+    const deleteStudentForm = { ...req.body };
+    const deleteSingleStudent = `DELETE FROM student WHERE student.id = ? `
+    const params = [deleteStudentForm.studentid];
+
+    try {
+        const [student] = await db.promise().query(deleteSingleStudent, [params]);
+
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+    res.send(`<h2> Student ${deleteStudentForm.studentid} succesfully deleted.
+         </h2> `);
+})
 
 
 app.get("/officermgmt", async (req, res) => {
@@ -174,6 +201,41 @@ app.get("/officermgmt", async (req, res) => {
     const [courses] = await db.promise().query(coursesql);
     res.render("officermgmt", { courses, users });
 });
+
+app.post("/addofficer", async (req, res) => {
+    const addOfficerForm = { ...req.body };
+    const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
+VALUES (?, ?, ?, ?, ?)`
+
+    const params = [
+        addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
+        addOfficerForm.officerEmail,
+        addOfficerForm.officerRole,
+        addOfficerForm.officerPassword,
+    ];
+
+
+console.log(req.body)
+    try {
+        const [insertOfficer] = await db.promise().query(insertOfficerSQL, params);
+
+
+        const insertMngdCourseSQL = `INSERT INTO managedcourses (systemUserId, courseID) VALUES (?, ?)`
+        const insertedOfficer = [insertOfficer.insertId,
+        addOfficerForm.officerCourseName];
+
+        const [insertMngdCourse] = await db.promise().query(insertMngdCourseSQL, insertedOfficer);
+
+
+        res.send(`<H2> New officer succesfully added </h2> <br> 
+                click <a href = "/officermgmtt"> here </a> to return to officer management `);
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+});
+
 
 app.get("/editofficer/:eid", async (req, res) => {
     //const adminId <---- Need to add in authorisation;
