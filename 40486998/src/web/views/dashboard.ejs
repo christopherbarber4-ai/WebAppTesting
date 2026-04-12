@@ -26,17 +26,17 @@
        
     <table>
     <tbody>      
-    <%uniqueCourses.forEach((course)=>{ %>
+    <%uniqueCourses.forEach((stat)=>{ %>
     <tr>
  
   
-    <td> Course Name: <%= course.title %></td>
-    <td> Total Number of Students: <%= studentStats[course.courseID].totalStudents %></td>
-    <td> Number of Firsts:<%= studentStats[course.courseID].gradeFirst %></td>
-    <td> Number of 2:1s: <%= studentStats[course.courseID].gradeTwoOne %></td>
-    <td> Number of 2:2s: <%= studentStats[course.courseID].gradeTwoTwo %></td>
-    <td> Number of Thirds: <%= studentStats[course.courseID].gradeThird %></td>
-    <td> Number of Fails: <%= studentStats[course.courseID].gradeFail%></td>
+    <td> Course Name: <%= stat.title %></td>
+    <td> Total Number of Students: <%= studentStats[stat.courseID].totalStudents %> (<%= studentStats[stat.courseID].studentCountPercentage %>%) </td>
+    <td> Number of Firsts: <%= studentStats[stat.courseID].gradeFirst %> (<%= studentStats[stat.courseID].firstPercentage %>%) </td>
+    <td> Number of 2:1s: <%= studentStats[stat.courseID].gradeTwoOne %> (<%= studentStats[stat.courseID].twoOnePercentage %>%)</td>
+    <td> Number of 2:2s: <%= studentStats[stat.courseID].gradeTwoTwo %> (<%= studentStats[stat.courseID].twoTwoPercentage %>%)</td>
+    <td> Number of Thirds: <%= studentStats[stat.courseID].gradeThird %> (<%= studentStats[stat.courseID].thirdPercentage %>%)</td>
+    <td> Number of Fails: <%= studentStats[stat.courseID].gradeFail%> (<%= studentStats[stat.courseID].failPercentage %>%)</td>
     </tr>
  <% }); %>
   </tbody>

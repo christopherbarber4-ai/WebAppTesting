@@ -77,11 +77,11 @@ app.get("/landing", async (req, res) => {
 })
 
 app.get("/dashboard", async (req, res) => {
-    const courseDataSQL = `SELECT * FROM student
-    INNER JOIN course 
+    const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, student.awardID FROM course
+    LEFT JOIN student 
     ON student.courseID = course.id
     LEFT JOIN award
-    ON student.awardid = award.id `;
+    ON student.awardID = award.id `;
     //const params = "BSc Computer Science";
     const [stats] = await db.promise().query(courseDataSQL);
 
@@ -91,14 +91,14 @@ app.get("/dashboard", async (req, res) => {
     //create new array for unique courses
     const uniqueCourses = [];
     stats.forEach((stat) => {
-        if (!uniqueCourses.find((courseCheck) =>
-            courseCheck.courseID === stat.courseID)) {
-            uniqueCourses.push(stat);
+        if (!uniqueCourses[stat.courseID]) {
+            uniqueCourses[stat.courseID] = stat;
         }
     });
 
     //create an array to house counts per course 
     const studentStats = [];
+    let totalStudentCount = 0;
     stats.forEach((stat) => {
         if (!studentStats[stat.courseID]) {
             studentStats[stat.courseID] = {
@@ -110,28 +110,61 @@ app.get("/dashboard", async (req, res) => {
                 gradeFail: 0
             };
         }
-        studentStats[stat.courseID].totalStudents++;
 
-        if (stat.classification === 'First Class Honours (1st)') {
-            studentStats[stat.courseID].gradeFirst++;
+        if (stat.stuID) {
+            studentStats[stat.courseID].totalStudents++;
+            totalStudentCount++;
+            if (stat.classification === 'First Class Honours (1st)') {
+                studentStats[stat.courseID].gradeFirst++;
+
+            }
+            if (stat.classification === 'Upper Second Class (2:1)') {
+                studentStats[stat.courseID].gradeTwoOne++;
+            }
+            if (stat.classification === 'Lower Second Class (2:2)') {
+                studentStats[stat.courseID].gradeTwoTwo++;
+            }
+            if (stat.classification === 'Third Class Honours') {
+                studentStats[stat.courseID].gradeThird++;
+            }
+            if (stat.classification === 'Fail') {
+                studentStats[stat.courseID].gradeFail++;
+            }
+
         }
-        if (stat.classification === 'Upper Second Class (2:1)') {
-            studentStats[stat.courseID].gradeTwoOne++;
+    });
+    console.log(totalStudentCount);
+
+    studentStats.forEach((course) =>{
+        course.studentCountPercentage = ((course.totalStudents / totalStudentCount) * 100).toFixed(0);
+    });
+
+
+    studentStats.forEach((course) => {
+        if (course.totalStudents > 0) {
+            course.firstPercentage = (((course.gradeFirst / course.totalStudents) * 100).toFixed(0));
+            course.twoOnePercentage = (((course.gradeTwoOne / course.totalStudents) * 100).toFixed(0));
+            course.twoTwoPercentage = (((course.gradeTwoTwo / course.totalStudents) * 100).toFixed(0));
+            course.thirdPercentage = (((course.gradeThird / course.totalStudents) * 100).toFixed(0));
+            course.failPercentage = (((course.gradeThird / course.totalStudents) * 100).toFixed(0));
         }
-        if (stat.classification === 'Lower Second Class (2:2)') {
-            studentStats[stat.courseID].gradeTwoTwo++;
-        }
-        if (stat.classification === 'Third Class Honours') {
-            studentStats[stat.courseID].gradeThird++;
-        }
-        if (stat.classification === 'Fail') {
-            studentStats[stat.courseID].gradeFail++;
+        else {
+            course.firstPercentage = 0;
+            course.twoOnePercentage = 0;
+            course.twoTwoPercentage = 0;
+            course.thirdPercentage = 0;
+            course.failPercentage = 0;
         }
 
     });
 
 
-    console.log(studentStats);
+
+
+
+
+
+
 
     res.render("dashboard", { stats, uniqueCourses, studentStats });
 });
@@ -260,14 +293,14 @@ app.get("/officermgmt", async (req, res) => {
 app.post("/addofficer", async (req, res) => {
     const addOfficerForm = { ...req.body };
     const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
-VALUES (?, ?, ?, ?, ?, ?)`
+VALUES (?, ?, ?, ?, ?)`
 
     const params = [
         addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
         addOfficerForm.officerEmail,
         addOfficerForm.officerRole,
         addOfficerForm.officerPassword,
-        addOfficerForm.officerid
+
     ];
 
 
@@ -476,13 +509,13 @@ app.post("/addclassification/", async (req, res) => {
         //STEP 1 - ensure where resits, the resit result is taken forwards.
         // cycles through original results and if module ID 
         // doesnt exist or where resit is true then add to new map
-        const cleanedResults = new Map();
+        const cleanedResults = [];
         results.forEach((result) => {
-            if (!cleanedResults.has(result.moduleID) || result.resit === 1) {
-                cleanedResults.set(result.moduleID, result);
+            if (!cleanedResults[result.moduleID] || result.resit === 1) {
+                cleanedResults[result.moduleID] = result;
             }
         });
-        const singleResults = Array.from(cleanedResults.values());
+
 
         //STEP 2 - calculate the final scores for each year and total
         let yearOneResults = 0;
@@ -490,7 +523,7 @@ app.post("/addclassification/", async (req, res) => {
         let yearThreeResults = 0;
         let yearOneFail = false;
 
-        singleResults.forEach((result) => {
+        cleanedResults.forEach((result) => {
             if (result.resit === 1 && result.score > 40) {
                 result.score = RESIT_MAX;
             } else {
