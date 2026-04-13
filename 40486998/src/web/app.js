@@ -77,46 +77,44 @@ app.get("/landing", async (req, res) => {
 })
 
 app.get("/dashboard", async (req, res) => {
-    const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, student.awardID FROM course
+    const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, award.finalScore, student.awardID FROM course
     LEFT JOIN student 
     ON student.courseID = course.id
     LEFT JOIN award
     ON student.awardID = award.id `;
-    //const params = "BSc Computer Science";
     const [stats] = await db.promise().query(courseDataSQL);
 
-    console.log(stats);
 
-
-    //create new array for unique courses
-    const uniqueCourses = [];
-    stats.forEach((stat) => {
-        if (!uniqueCourses[stat.courseID]) {
-            uniqueCourses[stat.courseID] = stat;
-        }
-    });
-
-    //create an array to house counts per course 
+    //create an array to ensure only unique courses and also house
+    // counts per course e.g. grades and no. of students 
     const studentStats = [];
-    let totalStudentCount = 0;
+    let globalStudentCount = 0;
     stats.forEach((stat) => {
+
         if (!studentStats[stat.courseID]) {
             studentStats[stat.courseID] = {
+                id: stat.courseID,
+                title: stat.title,
                 totalStudents: 0,
                 gradeFirst: 0,
                 gradeTwoOne: 0,
                 gradeTwoTwo: 0,
                 gradeThird: 0,
-                gradeFail: 0
+                gradeFail: 0,
+                allGradedScores: 0,
+                gradedStudents: 0
             };
         }
 
         if (stat.stuID) {
             studentStats[stat.courseID].totalStudents++;
-            totalStudentCount++;
+            if (stat.finalScore != null){
+            studentStats[stat.courseID].allGradedScores += parseFloat(stat.finalScore);
+            studentStats[stat.courseID].gradedStudents ++;
+            }
+            globalStudentCount++;
             if (stat.classification === 'First Class Honours (1st)') {
                 studentStats[stat.courseID].gradeFirst++;
-
             }
             if (stat.classification === 'Upper Second Class (2:1)') {
                 studentStats[stat.courseID].gradeTwoOne++;
@@ -133,12 +131,13 @@ app.get("/dashboard", async (req, res) => {
 
         }
     });
-    console.log(totalStudentCount);
-
-    studentStats.forEach((course) =>{
-        course.studentCountPercentage = ((course.totalStudents / totalStudentCount) * 100).toFixed(0);
+    //course also same as stat but labelled differently here for clarity. two loops to count 
+    // both number of students and also number of classifications for each course
+    studentStats.forEach((course) => {
+        course.studentCountPercentage = ((course.totalStudents / globalStudentCount) * 100).toFixed(0);
+        course.averageScore = (course.allGradedScores / course.gradedStudents).toFixed(2);
+ 
     });
-
 
     studentStats.forEach((course) => {
         if (course.totalStudents > 0) {
@@ -146,7 +145,7 @@ app.get("/dashboard", async (req, res) => {
             course.twoOnePercentage = (((course.gradeTwoOne / course.totalStudents) * 100).toFixed(0));
             course.twoTwoPercentage = (((course.gradeTwoTwo / course.totalStudents) * 100).toFixed(0));
             course.thirdPercentage = (((course.gradeThird / course.totalStudents) * 100).toFixed(0));
-            course.failPercentage = (((course.gradeThird / course.totalStudents) * 100).toFixed(0));
+            course.failPercentage = (((course.gradeFail / course.totalStudents) * 100).toFixed(0));
         }
         else {
             course.firstPercentage = 0;
@@ -157,16 +156,11 @@ app.get("/dashboard", async (req, res) => {
         }
 
     });
+    console.log(stats);
+    console.log(studentStats);
 
 
-
-
-
-
-
-
-
-    res.render("dashboard", { stats, uniqueCourses, studentStats });
+    res.render("dashboard", { studentStats });
 });
 
 app.get("/logout", (req, res) => {
@@ -547,48 +541,50 @@ app.post("/addclassification/", async (req, res) => {
             }
         });
 
-        //STEP 3 - Confirm classification based on final score.
+        //STEP 3 - Confirm classification based on final score, populate an array with both score and classificaiton
         function calcFinalClassification(y1isFail, y2, y3, TOTAL_CREDS) {
-            let finalScore = 0;
-            let classification = "";
+
+            let classification = [0,];
 
             if (!y1isFail) {
-                finalScore += (y2 / TOTAL_CREDS * 0.30) + (y3 / TOTAL_CREDS * 0.70);
+                classification[0] += (y2 / TOTAL_CREDS * 0.30) + (y3 / TOTAL_CREDS * 0.70);
             } else {
-                classification = "Fail";
+                classification[1] = "Fail";
                 return classification;
             }
 
-            if (finalScore <= 39.99) {
-                classification = "Fail";
+            if (classification[0] <= 39.99) {
+                classification[1] = "Fail";
             }
-            else if (finalScore >= 40 && finalScore <= 49.99) {
-                classification = "Third Class Honours";
+            else if (classification[0] >= 40 && classification[0] <= 49.99) {
+                classification[1] = "Third Class Honours";
             }
-            else if (finalScore >= 50 && finalScore <= 59.99) {
-                classification = "Lower Second Class (2:2)";
+            else if (classification[0] >= 50 && classification[0] <= 59.99) {
+                classification[1] = "Lower Second Class (2:2)";
             }
-            else if (finalScore >= 60 && finalScore <= 69.99) {
-                classification = "Upper Second Class (2:1)";
+            else if (classification[0] >= 60 && classification[0] <= 69.99) {
+                classification[1] = "Upper Second Class (2:1)";
             }
             else {
-                classification = "First Class Honours (1st)";
+                classification[1] = "First Class Honours (1st)";
             }
-            console.log(classification);
-            console.log(finalScore);
+            console.log(classification[1]);
+            console.log(classification[0]);
             return classification;
         }
 
-        studentClassification = calcFinalClassification(yearOneFail, yearTwoResults, yearThreeResults, TOTAL_CREDS);
+        console.log(studentClassification = calcFinalClassification(yearOneFail, yearTwoResults, yearThreeResults, TOTAL_CREDS));
+
 
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
     }
 
-    const insertClassificationSQL = `INSERT INTO award (classification, classificationStatus, systemUserID) VALUES(?, ?, ?)`
+    const insertClassificationSQL = `INSERT INTO award (finalScore, classification, classificationStatus, systemUserID) VALUES(?, ?, ?, ?)`
     const insertParams = [
-        studentClassification,
+        studentClassification[0],
+        studentClassification[1],
         "In Progress",
         2,
     ];
