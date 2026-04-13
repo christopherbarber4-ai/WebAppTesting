@@ -108,9 +108,9 @@ app.get("/dashboard", async (req, res) => {
 
         if (stat.stuID) {
             studentStats[stat.courseID].totalStudents++;
-            if (stat.finalScore != null){
-            studentStats[stat.courseID].allGradedScores += parseFloat(stat.finalScore);
-            studentStats[stat.courseID].gradedStudents ++;
+            if (stat.finalScore != null) {
+                studentStats[stat.courseID].allGradedScores += parseFloat(stat.finalScore);
+                studentStats[stat.courseID].gradedStudents++;
             }
             globalStudentCount++;
             if (stat.classification === 'First Class Honours (1st)') {
@@ -136,7 +136,7 @@ app.get("/dashboard", async (req, res) => {
     studentStats.forEach((course) => {
         course.studentCountPercentage = ((course.totalStudents / globalStudentCount) * 100).toFixed(0);
         course.averageScore = (course.allGradedScores / course.gradedStudents).toFixed(2);
- 
+
     });
 
     studentStats.forEach((course) => {
@@ -345,17 +345,23 @@ app.post("/editofficer", async (req, res) => {
         updateOfficerForm.officerPassword,
         updateOfficerForm.officerid];
 
-    const updateMngdCourseSQL = `UPDATE managedcourses SET courseID = ?
-    WHERE id = ?`
     const updateCoursesParams = [
-        updateOfficerForm.officerCourseName,
+        updateOfficerForm.officerid,
+        updateOfficerForm.courseName,
         updateOfficerForm.officerid];
 
     try {
+
         const [result] = await db.promise().query(updatOfficerSQL, updateParams);
-        console.log(result);
-        const [courseUpdate] = await db.promise().query(updateMngdCourseSQL, updateCoursesParams);
-        console.log(courseUpdate);
+        const deleteManagedCourses = `DELETE FROM managedcourses WHERE systemuserID = ? `
+        await db.promise().query(deleteManagedCourses, updateOfficerForm.officerid);
+        for (let courseid in updateOfficerForm.courseName) {
+            const updateMngdCourseSQL = `INSERT INTO managedcourses (systemUserID, courseID) VALUES (?,?)`
+
+            await db.promise().query(updateMngdCourseSQL, [updateOfficerForm.officerid, updateOfficerForm.courseName[courseid], updateOfficerForm.officerid]);
+        }
+
+
         res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
             ${updateOfficerForm.officerid} has been updated to reflect:
             <ul>
@@ -363,7 +369,7 @@ app.post("/editofficer", async (req, res) => {
             <li> Last Name: ${updateOfficerForm.officerLastName}</li>
             <li> Email Address: ${updateOfficerForm.officerEmail}</li>
             <li> Role: ${updateOfficerForm.officerRole}</li>
-            <li> CourseID: ${updateOfficerForm.officerCourseName}</li>
+            <li> CourseID: ${updateOfficerForm.courseName}</li>
             </ul> <br> 
                 Please click <a href = "/officermgmt"> here </a> to return to officer
                 management `)
