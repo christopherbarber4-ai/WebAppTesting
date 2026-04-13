@@ -11,16 +11,30 @@
 <body>
 
   <header>
-    <a href="/landing" class="logo">HEDclass</a>
-    <a href="/dashboard" class="button">Dashboard</a>
-    <a href="/studentmgmt" class="button">Student Management</a>
-    <a href="/officermgmt" class="button"> Officer Management </a>
-    <a href = "/coursemgmt" class="button"> Course Management</a>
-    <a href ="/resultsmgmt" class="button"> Results Management</a>
-    <a href="/logout" class="button">Logout</a>
+    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+      <a href="/landing" class="logo">HEDclass</a>
+      <a href="/dashboard" class="button">Dashboard</a>
+      <a href="/studentmgmt" class="button">Student Management</a>
+      <% } %>
+        <% if(userAccessLevel==="admin") { %>
+          <a href="/officermgmt" class="button"> Officer Management </a>
+           <a href="/logout" class="button">Logout</a>
+          <% } %>
+            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+              <a href="/coursemgmt" class="button"> Course Management</a>
+              <a href="/resultsmgmt" class="button"> Results Management</a>
+              <a href="/logout" class="button">Logout</a>
+              <% } %>
+                (logged in as <Strong>
+                  <%= userAccessLevel %>
+                </Strong>)
 
   </header>
-<h1> Hello, logged in as </h2><%= userData.role %> </h2></h1>
+  <h1> Hello, logged in as </h2>
+    <%= userData.role %>
+
+
+
 
 
 

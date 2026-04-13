@@ -11,37 +11,47 @@
 <body>
 
   <header>
-    <a href="/landing" class="logo">HEDclass</a>
-    <a href="/dashboard" class="button">Dashboard</a>
-    <a href="/studentmgmt" class="button">Student Management</a>
-    <a href="/officermgmt" class="button"> Officer Management </a>
-    <a href = "/coursemgmt" class="button"> Course Management</a>
-    <a href ="/resultsmgmt" class="button"> Results Management</a>
-    <a href="/logout" class="button">Logout</a>
-
+    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+      <a href="/landing" class="logo">HEDclass</a>
+      <a href="/dashboard" class="button">Dashboard</a>
+      <a href="/studentmgmt" class="button">Student Management</a>
+      <% } %>
+        <% if(userAccessLevel==="admin" ) { %>
+          <a href="/officermgmt" class="button"> Officer Management </a>
+          <% } %>
+            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+              <a href="/coursemgmt" class="button"> Course Management</a>
+              <a href="/resultsmgmt" class="button"> Results Management</a>
+              <a href="/logout" class="button">Logout</a>
+              <% } %>
+                (logged in as <Strong>
+                  <%= userAccessLevel %>
+                </Strong>)
   </header>
-<h2> WELCOME TO THE DASHBOARD!!</h2>
+  <h2> WELCOME TO THE DASHBOARD!!</h2>
 
-        <hr>
-       
-    <table>
-    <tbody>      
-    <%studentStats.forEach((course)=>{ %>
-    <tr>
- 
-  
-    <td> Course Name: <%= course.title %></td>
-    <td> Total Number of Students: <%= course.totalStudents %> (<%= course.studentCountPercentage %>%) </td>
-    <td> Average score achieved: <%= course.averageScore %> </td>
-    <td> Number of Firsts: <%= course.gradeFirst %> (<%= course.firstPercentage %>%) </td>
-    <td> Number of 2:1s: <%= course.gradeTwoOne %> (<%= course.twoOnePercentage %>%)</td>
-    <td> Number of 2:2s: <%= course.gradeTwoTwo %> (<%= course.twoTwoPercentage %>%)</td>
-    <td> Number of Thirds: <%= course.gradeThird %> (<%= course.thirdPercentage %>%)</td>
-    <td> Number of Fails: <%= course.gradeFail%> (<%= course.failPercentage %>%)</td>
-    </tr>
- <% }); %>
-  </tbody>
-</table>
+  <hr>
+
+  <table>
+    <tbody>
+      <%studentStats.forEach((course)=>{ %>
+        <tr>
+
+
+          <td> Course Name: <%= course.title %>
+          </td>
+          <td> Total Number of Students: <%= course.totalStudents %> (<%= course.studentCountPercentage %>%) </td>
+          <td> Average score achieved: <%= course.averageScore %>
+          </td>
+          <td> Number of Firsts: <%= course.gradeFirst %> (<%= course.firstPercentage %>%) </td>
+          <td> Number of 2:1s: <%= course.gradeTwoOne %> (<%= course.twoOnePercentage %>%)</td>
+          <td> Number of 2:2s: <%= course.gradeTwoTwo %> (<%= course.twoTwoPercentage %>%)</td>
+          <td> Number of Thirds: <%= course.gradeThird %> (<%= course.thirdPercentage %>%)</td>
+          <td> Number of Fails: <%= course.gradeFail%> (<%= course.failPercentage %>%)</td>
+        </tr>
+        <% }); %>
+    </tbody>
+  </table>
 
 </body>
 

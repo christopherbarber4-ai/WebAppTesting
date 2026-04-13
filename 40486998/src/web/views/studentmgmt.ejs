@@ -2,87 +2,116 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
-  <title>Student Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">
+    <title>Student Management</title>
 </head>
 
 <body>
 
-  <header>
-    <a href="/landing" class="logo">HEDclass</a>
-    <a href="/dashboard" class="button">Dashboard</a>
-    <a href="/studentmgmt" class="button">Student Management</a>
-    <a href="/officermgmt" class="button"> Officer Management </a>
-    <a href = "/coursemgmt" class="button"> Course Management</a>
-    <a href="/logout" class="button">Logout</a>
+    <header>
+        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+            <a href="/landing" class="logo">HEDclass</a>
+            <a href="/dashboard" class="button">Dashboard</a>
+            <a href="/studentmgmt" class="button">Student Management</a>
+            <% } %>
+                <% if(userAccessLevel==="admin" ) { %>
+                    <a href="/officermgmt" class="button"> Officer Management </a>
+                    <% } %>
+                        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+                            <a href="/coursemgmt" class="button"> Course Management</a>
+                            <a href="/resultsmgmt" class="button"> Results Management</a>
+                            <a href="/logout" class="button">Logout</a>
+                            <% } %>
+                                (logged in as <Strong>
+                                    <%= userAccessLevel %>
+                                </Strong>)
 
-  </header>
+    </header>
 
-  <h3> Students</h3>
-         <p class="h5">
-            Data:
-        </p>
-        <hr>
-       
+    <h3> Students</h3>
+    <p class="h5">
+        Data:
+    </p>
+    <hr>
+
     <table>
-    <tbody>      
-    <%students.forEach((student)=>{ %>
-    <tr>
- 
-       <td> <b> first name:</b> <%= student.firstName %> </td>
-        <td> <b>second name:</b> <%= student.lastName %> <br></td>
-        <td> <b> email:</b> <%= student.email %><br></td>
-      <td>  <b> course:</b> <%= student.courseID %><br></td>
-      <td> <b>course title:</b> <%= student.title %></td>
-      <td> <b>award information: </b> <%=student.classification%></td>
-      <td> <a href = "/viewresults/<%=student.stuID%>"> View Results Information </a></td>
-      <td> <a href="/editstudent/<%=student.stuID%>"> Edit </a></td>
-      <td> <a href="/deletestudent/<%=student.stuID%>"> Delete</a></td>
+        <tbody>
+            <%students.forEach((student)=>{ %>
+                <tr>
 
-    </tr>
- <% }); %>
-  </tbody>
-</table>
-  <p>To create a new Student, please fill out all fields...</p>
+                    <td> <b> first name:</b>
+                        <%= student.firstName %>
+                    </td>
+                    <td> <b>second name:</b>
+                        <%= student.lastName %> <br>
+                    </td>
+                    <td> <b> email:</b>
+                        <%= student.email %><br>
+                    </td>
+                    <td> <b> course:</b>
+                        <%= student.courseID %><br>
+                    </td>
+                    <td> <b>course title:</b>
+                        <%= student.title %>
+                    </td>
+                    <td> <b>award information: </b>
+                        <%=student.classification%>
+                    </td>
+                    <td> <a href="/viewresults/<%=student.stuID%>"> View Results Information </a></td>
+                    <% if(userAccessLevel==="officer(edit)" ) { %>
+                        <td> <a href="/editstudent/<%=student.stuID%>"> Edit </a></td>
+                        <td> <a href="/deletestudent/<%=student.stuID%>"> Delete</a></td>
+                        <% } %>
 
-    <div class="studentForm">
-        <form action="/addstudent" method="POST">
-            <div>
-                First Name: <input name="studentFirstName" required>
-            </div>
-            <div>
-                Last Name: <input name="studentLastName" required>
-            </div>
-            <div>
-                Email: <input name="studentEmail" required>
-            </div>
-            <div>
-                Graduation Year: <select name="graduationYear" required>
-                    <option value="25/26"> 25/26 </option>
-                    <option value="26/27"> 26/27</option>
-                    <option value="27/28"> 27/28</option>
 
-                </select>
-                
-            </div>
-            <div>
-                Course: <select name="studentCourseName" required>
-                    <% students.forEach ((student)=> {%>
-                        <option value="<%= student.courseID%>">
-                            <%= student.title%>
-                        </option>
-                        <%}); %>
-                </select>
+                </tr>
+                <% }); %>
+        </tbody>
+    </table>
+
+    <% if(userAccessLevel==="officer(edit)") { %>
+
+            <p>To create a new Student, please fill out all fields...</p>
+
+            <div class="studentForm">
+                <form action="/addstudent" method="POST">
+                    <div>
+                        First Name: <input name="studentFirstName" required>
+                    </div>
+                    <div>
+                        Last Name: <input name="studentLastName" required>
+                    </div>
+                    <div>
+                        Email: <input name="studentEmail" required>
+                    </div>
+                    <div>
+                        Graduation Year: <select name="graduationYear" required>
+                            <option value="25/26"> 25/26 </option>
+                            <option value="26/27"> 26/27</option>
+                            <option value="27/28"> 27/28</option>
+
+                        </select>
+
+                    </div>
+                    <div>
+                        Course: <select name="studentCourseName" required>
+                            <% students.forEach ((student)=> {%>
+                                <option value="<%= student.courseID%>">
+                                    <%= student.title%>
+                                </option>
+                                <%}); %>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button>Add student</button>
+                    </div>
+                </form>
             </div>
 
-            <div>
-                <button>Add student</button>
-            </div>
-        </form>
-    </div>
-
+                <% } %>
 
 
 

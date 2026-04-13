@@ -11,13 +11,22 @@
 <body>
 
   <header>
-    <a href="/landing" class="logo">HEDclass</a>
-    <a href="#" class="button">Dashboard</a>
-    <a href="/studentmgmt" class="button">Student Management</a>
-    <a href="/officermgmt" class="button"> Officer Management </a>
-    <a href="/coursemgmt" class="button"> Course Management</a>
-    <a href="/logout" class="button">Logout</a>
-
+    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+      <a href="/landing" class="logo">HEDclass</a>
+      <a href="/dashboard" class="button">Dashboard</a>
+      <a href="/studentmgmt" class="button">Student Management</a>
+      <% } %>
+        <% if(userAccessLevel==="admin" ) { %>
+          <a href="/officermgmt" class="button"> Officer Management </a>
+          <% } %>
+            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+              <a href="/coursemgmt" class="button"> Course Management</a>
+              <a href="/resultsmgmt" class="button"> Results Management</a>
+              <a href="/logout" class="button">Logout</a>
+              <% } %>
+                (logged in as <Strong>
+                  <%= userAccessLevel %>
+                </Strong>)
   </header>
   <table>
     <tbody>
@@ -52,6 +61,9 @@
         <% }); %>
     </tbody>
   </table>
+
+        <% if(userAccessLevel==="officer(edit)") { %>
+  
 
 
   <p>To add a new result, please fill out all fields...</p>
@@ -108,4 +120,5 @@
     </form>
 </body>
 
+          <% } %>
 </html>
