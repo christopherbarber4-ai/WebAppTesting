@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
   <title>HedClass</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
@@ -18,19 +20,24 @@
       <% } %>
         <% if(userAccessLevel==="admin" ) { %>
           <a href="/officermgmt" class="button"> Officer Management </a>
+          <a href="/coursemgmt" class="button"> Course Management</a>
           <% } %>
             <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <a href="/resultsmgmt" class="button"> Results Management</a>
-              <a href="/logout" class="button">Logout</a>
               <% } %>
-                (logged in as <Strong>
-                  <%= userAccessLevel %>
-                </Strong>)
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                  userAccessLevel==="admin" ) { %>
+                  <a href="/logout" class="button">Logout</a>
+                  <% } %>
+                    (logged in as <Strong>
+                      <%= userAccessLevel %>
+                    </Strong>)
   </header>
   <h2> WELCOME TO THE DASHBOARD!!</h2>
 
   <hr>
+
+
 
   <table>
     <tbody>
@@ -48,10 +55,45 @@
           <td> Number of 2:2s: <%= course.gradeTwoTwo %> (<%= course.twoTwoPercentage %>%)</td>
           <td> Number of Thirds: <%= course.gradeThird %> (<%= course.thirdPercentage %>%)</td>
           <td> Number of Fails: <%= course.gradeFail%> (<%= course.failPercentage %>%)</td>
+          <td> <canvas id="chart-<%= course.id%>" width="1000" height="1000"> </canvas>
+
+
+          </td>
         </tr>
         <% }); %>
     </tbody>
   </table>
+
+  <script>
+    const courseData = <%- JSON.stringify(studentStats) %>.filter(Boolean);
+    
+    courseData.forEach((course) => {
+      const ctx = document.getElementById(`chart-${course.id}`);
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ["Total Students","First", "2:1", "2:2", "Third", "Fail"],
+          datasets: [{
+            label: course.title,
+            data: [
+              course.totalStudents,
+              course.gradeFirst,
+              course.gradeTwoOne,
+              course.gradeTwoTwo,
+              course.gradeThird,
+              course.gradeFail
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          indexAxis: 'x'
+        }
+      });
+
+
+    })
+  </script>
 
 </body>
 

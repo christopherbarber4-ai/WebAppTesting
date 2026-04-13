@@ -181,6 +181,7 @@ app.get("/dashboard", checkAuth, async (req, res) => {
             }
 
         });
+        console.log(studentStats)
 
         res.render("dashboard", { studentStats, userAccessLevel });
     } else {
@@ -484,19 +485,54 @@ app.post("/deleteofficer/", checkAuth, async (req, res) => {
 
 
 app.get("/coursemgmt", checkAuth, async (req, res) => {
-    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
-        const coursesql = `SELECT * FROM course
-    INNER JOIN Modules
-    ON course.id = Modules.courseid WHERE course.title = ?`;
-        const params = "BSc Computer Science";
-        const [courses] = await db.promise().query(coursesql, [params]);
-        console.log(courses[0]);
-        res.render("coursemgmt", { courses, userAccessLevel });
+    if (userAccessLevel === "admin") {
+        const coursesql = `SELECT * FROM course`;
+      
+
+
+        try {
+            const [courses] = await db.promise().query(coursesql);
+            console.log(courses[0]);
+            
+
+            res.render("coursemgmt", { courses, userAccessLevel });
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
     }
     else {
         res.send(`<h2> Error, Access Denied </h2> <br>
                 <a href="/" back </a>`)
     }
+});
+
+app.post("/addcourse", checkAuth, async (req, res) => {
+    const addCourseForm = { ...req.body };
+    const insertCourseSQL = `INSERT INTO course (title)
+VALUES (?)`
+    const params = [
+        addCourseForm.courseTitle];
+
+    try {
+        const [result] = await db.promise().query(insertCourseSQL, params)
+
+        const insertModuleeSQL = `INSERT INTO modules (moduleName, courseID, CreditValue, year) VALUES (?, ?, ?, ?)`
+        const moduleParams = [
+            addCourseForm.moduleName
+        ]
+        const insertedCourse = [result.insertId];
+
+        const [insertModule] = await db.promise().query(insertModuleeSQL, insertedCourse);
+
+
+        res.send(`<H2> New Course succesfully added </h2> <br> 
+                click <a href = "/coursemgmt"> here </a> to return to course management `);
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
 });
 
 //logic for auto classification

@@ -11,7 +11,7 @@
 
 <body>
 
-    <header>
+  <header>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
       <a href="/landing" class="logo">HEDclass</a>
       <a href="/dashboard" class="button">Dashboard</a>
@@ -19,13 +19,20 @@
       <% } %>
         <% if(userAccessLevel==="admin" ) { %>
           <a href="/officermgmt" class="button"> Officer Management </a>
+          <a href="/coursemgmt" class="button"> Course Management</a>
           <% } %>
             <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <a href="/resultsmgmt" class="button"> Results Management</a>
-              <a href="/logout" class="button">Logout</a>
+    
               <% } %>
-    </header>
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                  userAccessLevel==="admin" ) { %>
+                  <a href="/logout" class="button">Logout</a>
+                  <% } %>
+                    (logged in as <Strong>
+                      <%= userAccessLevel %>
+                    </Strong>)
+  </header>
 
     <table>
         <tbody>
