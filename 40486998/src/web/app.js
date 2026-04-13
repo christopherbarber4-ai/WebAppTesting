@@ -14,17 +14,8 @@ const PORT = 3000;
 const oneHour = 10000 * 60 * 60 * 1; // variable for cookie timeout
 
 const RESIT_MAX = 40;
-const YEARONEPASS = 4800;
 const TOTAL_CREDS = 120;
 
-const users = [{
-    uName: "christopher.barber4@gmail.com",
-    passW: "123",
-},
-{
-    uName: "noleen.robinson@hotmail.com",
-    passW: "2234",
-}];
 
 //SESSIONS SET UP
 
@@ -34,6 +25,16 @@ app.use(sessions({ // creates a session object on the node server
     cookie: { maxAge: oneHour },
     resave: false
 }));
+
+    function checkAuth (req, res, next){
+    if (req.session.authen){
+    
+        next();
+    } else {
+ res.send(`<h2> Error, Access Denied </h2> <br>
+                <a href="/"> back </a>`)
+}
+}
 
 //DB SET UP
 
@@ -55,28 +56,43 @@ app.get("/", (req, res) => {
     res.render("login");
 })
 
-app.post("/login", async (req, res) => {
-    const userEmail = req.body.userEmail;
-    const userPass = req.body.password;
-    req.session.authen = userEmail;
+    app.post("/login", async (req, res) => {
+        const userEmail = req.body.userEmail;
+        const checkLogin = `SELECT * FROM systemuser WHERE email = ?`
 
-    res.redirect("/landing");
+        try {
+            const [rows] = await db.promise().query(checkLogin, [userEmail])
+            if (rows.length > 0) {
+                req.session.authen = rows[0].id;
+                res.redirect("/landing");
+            } else {
+                res.send(`<h2> error, login credentials incorrect`)
+            }
+        } catch (error) {
+            res.status(500).send(error);
+        }
 
-    /* if (req.session.authen) { //update this so that there are 2 routes - 1 for class student and 1 for class admin. default landing for class student
-         res.render("landing", {students});
-     } else {
-         res.redirect("/");
-     }
- */
+    });
 
-});
 
-app.get("/landing", async (req, res) => {
 
-    res.render("landing");
-})
+    app.get("/landing", async (req, res) => {
+        if (req.session.authen) {
+            const uID = req.session.authen;
+            const checkLogin = `SELECT * FROM systemuser WHERE id = ?`
+            const [rows] = await db.promise().query(checkLogin, [uID])
+            const userData = rows[0];
+            res.render("landing", { userData });
+            
+        } else {
+            res.send(`<h2> Error, Access Denied </h2> <br>
+                <a href="/" back </a>`)
+        }
 
-app.get("/dashboard", async (req, res) => {
+    })
+
+app.get("/dashboard", checkAuth, async (req, res) => {
+    
     const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, award.finalScore, student.awardID FROM course
     LEFT JOIN student 
     ON student.courseID = course.id
@@ -167,9 +183,10 @@ app.get("/logout", (req, res) => {
     req.session.destroy();
     res.render("loggedout");
 
+
 });
 
-app.get("/studentmgmt", async (req, res) => {
+app.get("/studentmgmt",checkAuth, async (req, res) => {
     const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID, course.title, award.classification  FROM student
     INNER JOIN course 
     ON student.courseID = course.id
@@ -179,7 +196,7 @@ app.get("/studentmgmt", async (req, res) => {
     res.render("studentmgmt", { students });
 });
 
-app.post("/addstudent", async (req, res) => {
+app.post("/addstudent", checkAuth, async (req, res) => {
     const addOfficerForm = { ...req.body };
     const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
 VALUES (?, ?, ?, ?, ?)`
@@ -203,7 +220,7 @@ VALUES (?, ?, ?, ?, ?)`
 });
 
 
-app.get("/editstudent/:eid", async (req, res) => {
+app.get("/editstudent/:eid", checkAuth, async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const studentId = req.params.eid;
     const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
@@ -214,7 +231,7 @@ app.get("/editstudent/:eid", async (req, res) => {
     res.render("studentupdate", { student, courses });
 });
 
-app.post("/editstudent", async (req, res) => {
+app.post("/editstudent", checkAuth, async (req, res) => {
     const updatestudentForm = { ...req.body };
     const updateSQL = `UPDATE student SET firstName = ?, lastName = ?, 
     email = ?, graduationYear = ?
@@ -247,7 +264,7 @@ app.post("/editstudent", async (req, res) => {
 
 });
 
-app.get("/deletestudent/:eid", async (req, res) => {
+app.get("/deletestudent/:eid", checkAuth, async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const studentId = req.params.eid;
     const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
@@ -257,7 +274,7 @@ app.get("/deletestudent/:eid", async (req, res) => {
     res.render("studentdelete", { student, courses });
 })
 
-app.post("/deletestudent/", async (req, res) => {
+app.post("/deletestudent/", checkAuth, async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const deleteStudentForm = { ...req.body };
     const deleteSingleStudent = `DELETE FROM student WHERE student.id = ? `
@@ -276,7 +293,7 @@ app.post("/deletestudent/", async (req, res) => {
 });
 
 
-app.get("/officermgmt", async (req, res) => {
+app.get("/officermgmt", checkAuth, async (req, res) => {
     const userSQL = `SELECT * FROM systemuser`
     const [users] = await db.promise().query(userSQL);
     const coursesql = `SELECT * FROM course`
@@ -320,7 +337,7 @@ VALUES (?, ?, ?, ?, ?)`
 });
 
 
-app.get("/editofficer/:eid", async (req, res) => {
+app.get("/editofficer/:eid", checkAuth, async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const officerId = req.params.eid;
     const singleofficerSQL = `SELECT * FROM systemuser WHERE id = ?`
@@ -332,7 +349,7 @@ app.get("/editofficer/:eid", async (req, res) => {
 });
 
 
-app.post("/editofficer", async (req, res) => {
+app.post("/editofficer", checkAuth, async (req, res) => {
     const updateOfficerForm = { ...req.body };
     const updatOfficerSQL = `UPDATE systemuser SET firstName = ?, lastName = ?, 
     email = ?, role = ?, password = ?
@@ -382,7 +399,7 @@ app.post("/editofficer", async (req, res) => {
 
 });
 
-app.get("/deleteofficer/:eid", async (req, res) => {
+app.get("/deleteofficer/:eid", checkAuth, async (req, res) => {
     //const adminId <---- Need to add in authorisation;
     const officerId = req.params.eid;
     const singleofficerSQL = `SELECT * FROM systemuser WHERE id = ?`
@@ -391,7 +408,7 @@ app.get("/deleteofficer/:eid", async (req, res) => {
     res.render("officerdelete", { officer });
 })
 
-app.post("/deleteofficer/", async (req, res) => {
+app.post("/deleteofficer/", checkAuth, async (req, res) => {
 
     //const adminId <---- Need to add in authorisation;
     const deleteOfficerForm = { ...req.body };
@@ -418,7 +435,7 @@ app.post("/deleteofficer/", async (req, res) => {
 
 
 
-app.get("/coursemgmt", async (req, res) => {
+app.get("/coursemgmt", checkAuth, async (req, res) => {
     const coursesql = `SELECT * FROM course
     INNER JOIN Modules
     ON course.id = Modules.courseid WHERE course.title = ?`;
@@ -435,7 +452,7 @@ app.get("/coursemgmt", async (req, res) => {
 
 //VIEW ALL RESULTS
 
-app.get("/viewresults/:eid", async (req, res) => {
+app.get("/viewresults/:eid", checkAuth, async (req, res) => {
     const studentId = req.params.eid;
     const resultsSQL = `SELECT * FROM results
     INNER JOIN student 
@@ -464,7 +481,7 @@ app.get("/viewresults/:eid", async (req, res) => {
     console.log(award);
 });
 
-app.post("/addresult", async (req, res) => {
+app.post("/addresult", checkAuth, async (req, res) => {
     const addResultForm = { ...req.body };
     const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
     VALUES (?,?,?,?,?)`;
@@ -493,7 +510,7 @@ app.post("/addresult", async (req, res) => {
 });
 
 
-app.post("/addclassification/", async (req, res) => {
+app.post("/addclassification/", checkAuth, async (req, res) => {
     const classificationForm = { ...req.body };
     const studentId = [classificationForm.studentId];
     const resultsSQL = `SELECT * FROM results
