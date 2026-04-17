@@ -51,6 +51,12 @@ header{
 
 }
 
+#landingContainer{
+    border: thin solid black;
+    margin: 50px;
+
+}
+
 .logoutForm {
     margin: 20%;
     border-radius: 20px;
@@ -73,6 +79,7 @@ body {
 
 button {
     border-radius: 15px;
+    border: thin solid black;
     
 
 }
@@ -101,4 +108,8 @@ button {
     padding: 10px;
     border-radius: 20px;
     box-shadow: 5px 10px 20px 0px grey;
+}
+
+.toast {
+background-color: cornflowerblue;
 }

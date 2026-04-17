@@ -10,10 +10,12 @@
 
 <body>
 
+  <% if (message !== 'undefined' && message) { %>
+  <span class="toast" id="successToast"><%= message %></span>
+<% } %>
+
   <header>
-    <div class="brandedLogo">
-      <img src="/media/logo2.jpg" id="logo" />
-    </div>
+
     <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
@@ -46,80 +48,29 @@
   <table>
     <tbody>
       <%courses.forEach((course)=>{ %>
-        <tr>
-
-          <td> Course Name: <%= course.title %>
-          </td>
-
-        </tr>
+      <tr>
+        <td>Course Title: <%= course.title %></td>
+        <td>Course y2 Weight: <%= course.classificationYear2Weight %></td>
+        <td>Course y3 Weight: <%= course.classificationYear3Weight %></td>
+        <td>Course Max Resit Score: <%= course.resitMax %></td>
+        <td>Course Fail Threshold: <%= course.failBoundary %></td>
+        <td>Course Third Range: <%= course.thirdLower %> - <%= course.thirdUpper %></td>
+        <td>Course Two Two Range: <%= course.twoTwoLower %> - <%= course.twoTwoUpper %></td>
+        <td>Course Two One Range: <%= course.twoOneLower %> - <%= course.twoOneUpper %></td>
+        <td>Course First Boundary: ><%= course.firstBoundary %></td>
+        <td><a href="/editcourserules/<%= course.id %>">Edit</a></td>
+      </tr>
         <% }); %>
     </tbody>
   </table>
 
-  <p>To create a new course please fill out all fields...</p>
+  <p>To create a new course please fill out all fields... Please note all courses will be loaded initially with the
+    University's standard classification rules</p>
 
   <div class="courseForm">
     <form action="/addcourse" method="post">
       <div>
         Course Title: <input name="courseTitle" required>
-      </div>
-
-      <div>
-        Module 1 to include:
-        <input type="text" id="moduleName1" name="">
-      </div>
-      <div>
-        Module 2 to include:
-        <input type="text" id="moduleName2" name="">
-      </div>
-      <div>
-        Module 3 to include:
-        <input type="text" id="moduleName3" name="">
-      </div>
-      <div>
-        Module 4 to include:
-        <input type="text" id="moduleName4" name="">
-      </div>
-      <div>
-        Module 5 to include:
-        <input type="text" id="moduleName5" name="">
-      </div>
-      <div>
-        Module 6 to include:
-        <input type="text" id="moduleName6" name="">
-      </div>
-      <div>
-        Module 7 to include:
-        <input type="text" id="moduleName7" name="">
-      </div>
-      <div>
-        Module 8 to include:
-        <input type="text" id="moduleName8" name="">
-      </div>
-      <div>
-        Module 9 to include:
-        <input type="text" id="moduleName9" name="">
-      </div>
-      <div>
-        Module 10 to include:
-        <input type="text" id="moduleName10" name="">
-      </div>
-      <div>
-        Module 11 to include:
-        <input type="text" id="moduleName11" name="">
-      </div>
-      <div>
-        Module 12 to include:
-        <input type="text" id="moduleName12" name="">
-      </div>
-      <div>
-        Standard Classification Rules? <br>
-        <input type="radio" id="isStandard_yes" name="isStandard" value="yes">
-        <label for="yes"> Yes</label><br>
-        <input type="radio" id="isStandard_no" name="isStandard" value="no">
-        <label for="no"> No</label><br>
-
-
       </div>
 
       <div>

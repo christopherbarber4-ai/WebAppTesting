@@ -11,10 +11,12 @@
 
 <body>
 
+    <% if (message !== 'undefined' && message) { %>
+  <span class="toast" id="successToast"><%= message %></span>
+<% } %>
+
   <header>
-    <div class="brandedLogo">
-      <img src="/media/logo2.jpg" id="logo" />
-    </div>
+
     <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
@@ -39,9 +41,9 @@
   </header>
 
 
-    <h3> Students</h3>
-    <p class="h5">
-        Data:
+    <h3>Welcome to Student Management</h3>
+    <p>
+        Here you can either: <button> View/Edit </button> or <button> <a href="#studentForm"> Add new </a> </button>:
     </p>
     <hr>
 

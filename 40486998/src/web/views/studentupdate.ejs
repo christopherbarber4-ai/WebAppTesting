@@ -12,29 +12,23 @@
 <body>
 
     <form action="/editstudent" method="POST">
-        <p>
+   
       
             User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
-     
- 
+     </div>
+    <div> 
             Student First Name: <input type="text" name="studentFirstName" value="<%=student[0].firstName %>">
-      
+            
+         <div> 
       
             Student Last Name: <input type="text" name="studentLastName" value="<%=student[0].lastName %>">
-     
-     
+     </div>
+     <div>
             Student email address: <input type="text" name="studentEmail" value="<%=student[0].email %>">
-    
+    </div>
         <div>
             Graduation Year: <input type="text" name="studentGradYr" value="<%=student[0].graduationYear %>">
         </div>
-        <div>
-            Student Award: <input type="text" name="studentAward" value="<%=student[0].classification %>">
-        </div>
-                <div>
-            Student Award Classification: <input type="text" name="studentAward" value="<%=student[0].classificationStatus %>">
-        </div>
-
 
 
         </p>

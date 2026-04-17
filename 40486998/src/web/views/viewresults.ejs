@@ -11,10 +11,12 @@
 
 <body>
 
+    <% if (message !== 'undefined' && message) { %>
+  <span class="toast" id="successToast"><%= message %></span>
+<% } %>
+
   <header>
-    <div class="brandedLogo">
-      <img src="/media/logo2.jpg" id="logo" />
-    </div>
+
     <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 

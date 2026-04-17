@@ -190,7 +190,7 @@ app.get("/dashboard", checkAuth, async (req, res) => {
         });
         console.log(studentStats)
 
-        res.render("dashboard", { studentStats, userAccessLevel });
+        res.render("dashboard", { studentStats: studentStats.filter(Boolean), userAccessLevel });
     } else {
         res.send(`<h2> Error, Access Denied </h2> <br>
                 <a href="/" back </a>`)
@@ -206,14 +206,15 @@ app.get("/logout", (req, res) => {
 
 app.get("/studentmgmt", checkAuth, async (req, res) => {
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
-
+        const message = req.session.message;
+        req.session.message = null;
         const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID, course.title, award.classification  FROM student
     INNER JOIN course 
     ON student.courseID = course.id
     LEFT JOIN award
     ON student.awardid = award.id `;
         const [students] = await db.promise().query(studentssql);
-        res.render("studentmgmt", { students, userAccessLevel });
+        res.render("studentmgmt", { students, userAccessLevel, message });
 
     } else {
         res.send(`<h2> Error, Access Denied </h2> <br>
@@ -223,21 +224,21 @@ app.get("/studentmgmt", checkAuth, async (req, res) => {
 });
 
 app.post("/addstudent", checkAuth, async (req, res) => {
-    const addOfficerForm = { ...req.body };
+    const addStudentForm = { ...req.body };
     const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
 VALUES (?, ?, ?, ?, ?)`
     const params = [
-        addOfficerForm.studentFirstName, addOfficerForm.studentLastName,
-        addOfficerForm.studentEmail,
-        addOfficerForm.studentCourseName,
-        addOfficerForm.graduationYear]
+        addStudentForm.studentFirstName, addStudentForm.studentLastName,
+        addStudentForm.studentEmail,
+        addStudentForm.studentCourseName,
+        addStudentForm.graduationYear]
         ;
 
     try {
         const [result] = await db.promise().query(insertStudentSQL, params)
         console.log(result);
-        res.send(`<H2> New student succesfully added </h2> <br> 
-                click <a href = "/studentmgmt"> here </a> to return to student management `);
+        req.session.message = `Student ${addStudentForm.studentFirstName} ${addStudentForm.studentLastName} successfully added`;
+        res.redirect("/studentmgmt");
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
@@ -274,16 +275,8 @@ app.post("/editstudent", checkAuth, async (req, res) => {
     try {
         const [result] = await db.promise().query(updateSQL, updateParams);
         console.log(result);
-        res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
-            ${updatestudentForm.studentid} has been updated to reflect:
-            <ul>
-            <li> First Name: ${updatestudentForm.studentFirstName}</li>
-            <li> Last Name: ${updatestudentForm.studentLastName}</li>
-            <li> Email Address: ${updatestudentForm.studentEmail}</li>
-            <li> Graduation Year: ${updatestudentForm.studentGradYr}</li>
-            </ul> <br> 
-                Please click <a href = "/studentmgmt"> here </a> to return to user
-                management `)
+        req.session.message = `Student ${updatestudentForm.studentFirstName} ${updatestudentForm.studentLastName} successfully updated`;
+        res.redirect("/studentmgmt");
 
     } catch (error) {
         res.status(500).json(error);
@@ -321,15 +314,15 @@ app.post("/deletestudent/", checkAuth, async (req, res) => {
         res.status(500).json(error);
         console.log(error);
     }
-
-    res.send(`<h2> Student ${deleteStudentForm.studentid} succesfully deleted.
-         </h2> `);
+    req.session.message = `Student ${deleteStudentForm.studentFirstName} ${deleteStudentForm.studentLastName} successfully deleted`;
+    res.redirect("/studentmgmt");
 });
 
 
 app.get("/officermgmt", checkAuth, async (req, res) => {
     if (userAccessLevel === "admin") {
-
+        const message = req.session.message;
+        req.session.message = null;
 
         const userSQL = `SELECT systemuser.id, systemuser.firstName, systemuser.lastName, 
             systemuser.email, systemuser.role, course.title AS courseTitle
@@ -355,7 +348,7 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
 
         const coursesql = `SELECT * FROM course`
         const [courses] = await db.promise().query(coursesql);
-        res.render("officermgmt", { courses, users, userAccessLevel });
+        res.render("officermgmt", { courses, users, userAccessLevel, message });
     }
     else {
         res.send(`<h2> Error, Access Denied </h2> <br>
@@ -364,6 +357,8 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
 });
 
 app.post("/addofficer", async (req, res) => {
+
+
     const addOfficerForm = { ...req.body };
     const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
 VALUES (?, ?, ?, ?, ?)`
@@ -389,8 +384,8 @@ VALUES (?, ?, ?, ?, ?)`
         const [insertMngdCourse] = await db.promise().query(insertMngdCourseSQL, insertedOfficer);
 
 
-        res.send(`<H2> New officer succesfully added </h2> <br> 
-                click <a href = "/officermgmt"> here </a> to return to officer management `);
+        req.session.message = `Officer ${addOfficerForm.officerFirstName} ${addOfficerForm.officerLastName} successfully added`;
+        res.redirect("/officermgmt");
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
@@ -513,16 +508,22 @@ app.post("/deleteofficer/", checkAuth, async (req, res) => {
 
 app.get("/coursemgmt", checkAuth, async (req, res) => {
     if (userAccessLevel === "admin") {
-        const coursesql = `SELECT * FROM course`;
-
-
+        const message = req.session.message || null;
+        req.session.message = null;
+        const coursesql = `SELECT course.id, course.title, 
+            classificationrules.classificationYear2Weight, classificationrules.classificationYear3Weight, 
+            classificationrules.resitMax,
+            classificationrules.failBoundary,classificationrules.thirdLower, classificationrules.thirdUpper, classificationrules.twoTwoLower,
+            classificationrules.twoTwoUpper, classificationrules.twoOneLower, classificationrules.twoOneUpper, classificationrules.firstBoundary
+            FROM course
+            LEFT JOIN classificationrules ON course.id = classificationrules.courseID`;
 
         try {
             const [courses] = await db.promise().query(coursesql);
             console.log(courses[0]);
 
 
-            res.render("coursemgmt", { courses, userAccessLevel });
+            res.render("coursemgmt", { courses, userAccessLevel, message });
         } catch (error) {
             res.status(500).json(error);
             console.log(error);
@@ -544,17 +545,18 @@ VALUES (?)`
     try {
         const [result] = await db.promise().query(insertCourseSQL, params)
 
-        const insertModuleeSQL = `INSERT INTO modules (moduleName, courseID, CreditValue, year) VALUES (?, ?, ?, ?)`
-        const moduleParams = [
-            addCourseForm.moduleName
-        ]
         const insertedCourse = [result.insertId];
 
-        const [insertModule] = await db.promise().query(insertModuleeSQL, insertedCourse);
+        const insertRulesSQL = `INSERT INTO classificationrules 
+            (classificationYear2Weight, classificationYear3Weight,resitMax,failBoundary,thirdLower,thirdUpper,twoTwoLower, twoTwoUpper,twoOneLower,twoOneUpper,firstBoundary, courseID) 
+            VALUES (0.30,0.70,40,39.99,40,49.99,50,59.99,60,69.99,70, ?)`;
+        await db.promise().query(insertRulesSQL, [insertedCourse]);
 
 
-        res.send(`<H2> New Course succesfully added </h2> <br> 
-                click <a href = "/coursemgmt"> here </a> to return to course management `);
+
+
+        req.session.message = `Course ${addCourseForm.courseTitle} successfully added`;
+        res.redirect("/coursemgmt");
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
@@ -568,6 +570,9 @@ VALUES (?)`
 
 app.get("/viewresults/:eid", checkAuth, async (req, res) => {
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+
+        const message = req.session.message;
+        req.session.message = null;
 
         const studentId = req.params.eid;
         const resultsSQL = `SELECT * FROM results
@@ -599,7 +604,7 @@ app.get("/viewresults/:eid", checkAuth, async (req, res) => {
     FROM student WHERE student.id = ?`;
         const [student] = await db.promise().query(studentSQL, [studentId]);
 
-        res.render("viewresults", { totalResults, courses, award, student, userAccessLevel });
+        res.render("viewresults", { totalResults, courses, award, student, userAccessLevel, message });
         console.log(award);
     }
 
@@ -612,29 +617,35 @@ app.get("/viewresults/:eid", checkAuth, async (req, res) => {
 });
 
 app.post("/addresult", checkAuth, async (req, res) => {
-    const addResultForm = { ...req.body };
-    const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
+    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+        const addResultForm = { ...req.body };
+        const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
     VALUES (?,?,?,?,?)`;
-    const params =
-        [addResultForm.studentId,
-        addResultForm.courseId,
-        addResultForm.studentModule,
-        addResultForm.moduleScore,
-        addResultForm.isResit
-        ];
+        const params =
+            [addResultForm.studentId,
+            addResultForm.courseId,
+            addResultForm.studentModule,
+            addResultForm.moduleScore,
+            addResultForm.isResit
+            ];
 
-    try {
-        const [result] = await db.promise().query(insertResultSQL, params)
-        console.log(result);
-        console.log(req.body)
-        console.log(result)
+        try {
+            const [result] = await db.promise().query(insertResultSQL, params)
+            console.log(result);
+            console.log(req.body)
+            console.log(result)
 
-        res.send(`<H2> New result succesfully added </h2> <br>
-            Student ${addResultForm.studentId} has been updated
-                click <a href = "/studentmgmt"> here </a> to return to student management `);
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+            req.session.message = `Result for StudentID: ${addResultForm.studentId} for ModuleID:  ${addResultForm.studentModule} successfully added`;
+            res.redirect(`/viewresults/${addResultForm.studentId}`);
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+
+    else {
+        res.send(`<h2> Error, Access Denied </h2> <br>
+                <a href="/" back </a>`)
     }
 
 });
@@ -680,13 +691,15 @@ app.post("/editclassification", checkAuth, async (req, res) => {
 
         try {
             await db.promise().query(updateAwardSQL, updateAwardParams);
-            res.send(`Award succesfully updated`);
+        req.session.message = `Classification for Student ${editClassificationform.studentFirstName} ${editClassificationform.studentLastName} successfully updated`;
+        res.redirect(`/viewresults/${editClassificationform.studentId}`);
         } catch (error) {
             res.status(500).json(error);
             console.log(error);
         }
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br><a href="/"> back </a>`);
+             res.send(`<h2> Error, Access Denied </h2> <br>
+                <a href="/" back </a>`)
     }
 });
 
@@ -829,9 +842,10 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
 
         const [updatestudentaward] = await db.promise().query(updateStudentSQL, updateStudentParams);
 
-        res.send(`<H2> New classification succesfully added </h2> <br>
-            Student ${classificationForm.studentId} has been updated with a ${studentClassification}
-                click <a href = "/studentmgmt"> here </a> to return to student management `);
+
+        req.session.message = `Classification for Student ${classificationForm.studentId} succesfully added`;
+        res.redirect(`viewresults/${classificationForm.studentId}`);
+
 
     } catch (error) {
         res.status(500).json(error);

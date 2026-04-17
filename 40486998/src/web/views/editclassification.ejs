@@ -26,11 +26,11 @@
     <form action="/editclassification" method="POST">
 
 
-
+        <input type="hidden" name="studentId" value="<%= student[0].id %>">
         <div>
             Student:
-            <input type="text" name="studentId" readonly value="<%= student[0].firstName %>">
-            <input type="text" name="studentId" readonly value="<%= student[0].lastName %>">
+            <input type="text" name="studentFirstName" readonly value="<%= student[0].firstName %>">
+            <input type="text" name="studentLastName" readonly value="<%= student[0].lastName %>">
 
         </div>
         Current Award ID and Classification:
