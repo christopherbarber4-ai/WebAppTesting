@@ -1,5 +1,4 @@
 .loginForm {
-
     margin: 20%;
     border-radius: 20px;
     box-shadow: 5px 10px 20px 0px grey;
@@ -53,9 +52,9 @@ header{
 }
 
 .logoutForm {
-    width: 350px;
-     border-radius: 20px;
-     padding: 20px;
+    margin: 20%;
+    border-radius: 20px;
+    box-shadow: 5px 10px 20px 0px grey;
 }
 
 body {

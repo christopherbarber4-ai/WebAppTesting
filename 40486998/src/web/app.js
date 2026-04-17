@@ -336,7 +336,7 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
             FROM systemuser
             LEFT JOIN managedcourses ON systemuser.id = managedcourses.systemUserID
             LEFT JOIN course ON managedcourses.courseID = course.id`;
-     const [results] = await db.promise().query(userSQL);
+        const [results] = await db.promise().query(userSQL);
 
         const users = [];
         results.forEach((user) => {
@@ -637,6 +637,57 @@ app.post("/addresult", checkAuth, async (req, res) => {
         console.log(error);
     }
 
+});
+
+app.get("/editclassification/:eid", checkAuth, async (req, res) => {
+    if (userAccessLevel === "officer(edit)") {
+        const studentId = req.params.eid;
+        const studentssql = `SELECT student.id, student.firstName, student.lastName,
+            award.id AS awardID, award.finalScore, award.classification, 
+            award.classificationStatus, award.decision_summary, award.manualOverrideReq
+            FROM student
+            INNER JOIN award ON student.awardID = award.id
+            WHERE student.id = ?`;
+        const [student] = await db.promise().query(studentssql, [studentId]);
+        res.render("editclassification", { student, userAccessLevel });
+    } else {
+        res.send(`<h2> Error, Access Denied </h2> <br><a href="/"> back </a>`);
+    }
+});
+
+app.post("/editclassification", checkAuth, async (req, res) => {
+    if (userAccessLevel === "officer(edit)") {
+        const editClassificationform = { ...req.body };
+        let manualOverride;
+        if (editClassificationform.classification !== editClassificationform.originalClassification) {
+            manualOverride = 1;
+        } else {
+            manualOverride = 0;
+        }
+        const updateAwardSQL = `UPDATE award SET 
+            classification = ?, 
+            classificationStatus = ?,
+            decision_summary = ?,
+            manualOverrideReq = ?
+            WHERE id = ?`;
+        const updateAwardParams = [
+            editClassificationform.classification,
+            editClassificationform.classificationStatus,
+            editClassificationform.decisionSummary,
+            manualOverride,
+            editClassificationform.awardID
+        ];
+
+        try {
+            await db.promise().query(updateAwardSQL, updateAwardParams);
+            res.send(`Award succesfully updated`);
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    } else {
+        res.send(`<h2> Error, Access Denied </h2> <br><a href="/"> back </a>`);
+    }
 });
 
 

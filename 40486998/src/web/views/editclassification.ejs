@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+    <link rel="stylesheet" href="myuis.css">
+    <title>Edit Classification</title>
+</head>
+
+<body>
+
+    <header>
+        <a href="/landing" class="logo">HEDClass</a>
+        <a href="/studentmgmt" class="button">Student Management</a>
+        <a href="/logout" class="button">Logout</a>
+        (logged in as <strong>
+            <%= userAccessLevel %>
+        </strong>)
+    </header>
+
+    <h3>Edit Classification</h3>
+    <hr>
+
+    <form action="/editclassification" method="POST">
+
+
+
+        <div>
+            Student:
+            <input type="text" name="studentId" readonly value="<%= student[0].firstName %>">
+            <input type="text" name="studentId" readonly value="<%= student[0].lastName %>">
+
+        </div>
+        Current Award ID and Classification:
+        <input type="text" name="awardID" readonly value="<%= student[0].awardID %>">
+        <input type="text" name="originalClassification" readonly value="<%= student[0].classification %>">
+        <div>
+            <b>Calculated Score:</b>
+            <%= student[0].finalScore %>
+        </div>
+        <div>
+            <b>Manual Override:</b>
+            <% if (student[0].manualOverrideReq) { %>
+                Yes
+                <% } else { %>
+                    No
+                    <% } %>
+        </div>
+
+        <div>
+            Classification Award: <select name="classification" required>
+                <option value="First Class Honours (1st)"> First Class Honours (1st)</option>
+                <option value="Upper Second Class (2:1)"> Upper Second Class (2:1) </option>
+                <option value="Lower Second Class (2:2)"> Lower Second Class (2:2)</option>
+                <option value="Third Class Honours">Third Class Honours" </option>
+                <option value="Fail"> Fail </option>
+            </select>
+        </div>
+
+        <div>
+            Classification Status:
+            <select name="classificationStatus">
+                <option value="In Progress"> In Progress</option>
+                <option value="Approved">Approved </option>
+                <option value="Rejected"> Rejected </option>
+            </select>
+        </div>
+
+        <div>
+            Decision Summary:<br>
+            <input type="text" name="decisionSummary">
+        </div>
+
+        <div>
+            <button>Save Changes</button>
+        </div>
+
+    </form>
+
+</body>
+
+</html>

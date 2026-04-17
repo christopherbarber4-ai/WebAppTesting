@@ -126,6 +126,11 @@
           <button>Add Classification</button>
         </div>
       </form>
+      <form>
+      <% if (award.length> 0 && userAccessLevel === "officer(edit)") { %>
+        <button><a href="/editclassification/<%=student[0].id%>">Edit Classification</a> </button>
+        <% } %>
+        </form>
 </body>
 
 <% } %>
