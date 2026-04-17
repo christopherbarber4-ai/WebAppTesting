@@ -4,15 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="myuis.css">
   <title>HedClass</title>
 </head>
 
 <body>
 
   <header>
+    <div class="brandedLogo">
+      <img src="/media/logo2.jpg" id="logo" />
+    </div>
+    <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-      <a href="/landing" class="logo">HEDclass</a>
+
       <a href="/dashboard" class="button">Dashboard</a>
       <a href="/studentmgmt" class="button">Student Management</a>
       <% } %>
@@ -27,9 +32,10 @@
                   userAccessLevel==="admin" ) { %>
                   <a href="/logout" class="button">Logout</a>
                   <% } %>
-                    (logged in as <Strong>
-                      <%= userAccessLevel %>
-                    </Strong>)
+
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
   </header>
   <h1> Hello, logged in as </h2>
     <%= userData.role %>

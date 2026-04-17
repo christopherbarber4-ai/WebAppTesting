@@ -5,14 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="myuis.css">
   <title>Award Calc</title>
 </head>
 
 <body>
 
   <header>
+    <div class="brandedLogo">
+      <img src="/media/logo2.jpg" id="logo" />
+    </div>
+    <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-      <a href="/landing" class="logo">HEDclass</a>
+
       <a href="/dashboard" class="button">Dashboard</a>
       <a href="/studentmgmt" class="button">Student Management</a>
       <% } %>
@@ -22,15 +27,15 @@
           <% } %>
             <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
               <a href="/resultsmgmt" class="button"> Results Management</a>
-  
               <% } %>
                 <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
                   userAccessLevel==="admin" ) { %>
                   <a href="/logout" class="button">Logout</a>
                   <% } %>
-                    (logged in as <Strong>
-                      <%= userAccessLevel %>
-                    </Strong>)
+
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
   </header>
   <table>
     <tbody>
@@ -75,17 +80,16 @@
     <div class="resultForm">
       <form action="/addresult" method="POST">
         <div>
-          StudentId: <input type="text" name="studentId" readonly value="<%=totalResults[0].studentId %>">
+          StudentId: <input type="text" name="studentId" readonly value="<%=student[0].id %> ">
         </div>
         <div>
-          CourseId: <input type="text" name="courseId" readonly value="<%=totalResults[0].courseId %>">
+          CourseId: <input type="text" name="courseId" readonly value="<%=student[0].courseID %>">
         </div>
         <div>
-          First Name: <input type="text" name="studentFirstName" readonly value="<%=totalResults[0].firstName %>"
-            required>
+          First Name: <input type="text" name="studentFirstName" readonly value="<%=student[0].firstName %>" required>
         </div>
         <div>
-          Last Name: <input type="text" name="studentLastName" readonly value="<%=totalResults[0].lastName %>" required>
+          Last Name: <input type="text" name="studentLastName" readonly value="<%=student[0].lastName %>" required>
         </div>
         <div>
           Module Name: <select name="studentModule" required>
@@ -116,7 +120,7 @@
 
       <form action="/addclassification" method="POST">
         <div>
-          StudentId: <input type="text" name="studentId" readonly value="<%=totalResults[0].studentId %>">
+          StudentId: <input type="text" name="studentId" readonly value="<%=student[0].id %>">
         </div>
         <div>
           <button>Add Classification</button>

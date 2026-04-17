@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="myuis.css">
   <title>HedClass</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -13,8 +14,12 @@
 <body>
 
   <header>
+    <div class="brandedLogo">
+      <img src="/media/logo2.jpg" id="logo" />
+    </div>
+    <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-      <a href="/landing" class="logo">HEDclass</a>
+
       <a href="/dashboard" class="button">Dashboard</a>
       <a href="/studentmgmt" class="button">Student Management</a>
       <% } %>
@@ -29,9 +34,10 @@
                   userAccessLevel==="admin" ) { %>
                   <a href="/logout" class="button">Logout</a>
                   <% } %>
-                    (logged in as <Strong>
-                      <%= userAccessLevel %>
-                    </Strong>)
+
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
   </header>
   <h2> WELCOME TO THE DASHBOARD!!</h2>
 
@@ -39,62 +45,81 @@
 
 
 
-  <table>
-    <tbody>
+  <div class="container" id="dashboardTable">
+    <div class="row">
       <%studentStats.forEach((course)=>{ %>
-        <tr>
+        <div class="col-sm-12 col-md-6 col-lg-6">
+          <div class="card fluid">
+            <div class="section double-padded"> <b> Course Name:</b>
+              <%= course.title %>
+            </div>
+            <div class="section double-padded"> <b>Total Number of Students:</b>
+              <%= course.totalStudents %> (<%= course.studentCountPercentage %>%)
+            </div>
+            <div class="section double-padded"> <b>Average score achieved: </b>
+              <%= course.averageScore %>
+            </div>
+            <div class="section double-padded"> <b>Number of Firsts: </b>
+              <%= course.gradeFirst %> (<%= course.firstPercentage %>%)
+            </div>
+            <div class="section double-padded"><b>Number of 2:1s:</b>
+              <%= course.gradeTwoOne %> (<%= course.twoOnePercentage %>%)
+            </div>
+            <div class="section double-padded"><b>Number of 2:2s:</b>
+              <%= course.gradeTwoTwo %> (<%= course.twoTwoPercentage %>%)
+            </div>
+            <div class="section double-padded"><b>Number of Thirds: </b>
+              <%= course.gradeThird %> (<%= course.thirdPercentage %>%)
+            </div>
+            <div class="section double-padded"><b>Number of Fails:</b>
+              <%= course.gradeFail%> (<%= course.failPercentage %>%)
+            </div>
+            <div class="section double-padded"><canvas id="chart-<%= course.id%>" width="1000" height="750">
+              </canvas></div>
+          </div>
+        </div>
 
-
-          <td> Course Name: <%= course.title %>
-          </td>
-          <td> Total Number of Students: <%= course.totalStudents %> (<%= course.studentCountPercentage %>%) </td>
-          <td> Average score achieved: <%= course.averageScore %>
-          </td>
-          <td> Number of Firsts: <%= course.gradeFirst %> (<%= course.firstPercentage %>%) </td>
-          <td> Number of 2:1s: <%= course.gradeTwoOne %> (<%= course.twoOnePercentage %>%)</td>
-          <td> Number of 2:2s: <%= course.gradeTwoTwo %> (<%= course.twoTwoPercentage %>%)</td>
-          <td> Number of Thirds: <%= course.gradeThird %> (<%= course.thirdPercentage %>%)</td>
-          <td> Number of Fails: <%= course.gradeFail%> (<%= course.failPercentage %>%)</td>
-          <td> <canvas id="chart-<%= course.id%>" width="1000" height="1000"> </canvas>
-
-
-          </td>
-        </tr>
         <% }); %>
-    </tbody>
-  </table>
 
-  <script>
-    const courseData = <%- JSON.stringify(studentStats) %>.filter(Boolean);
-    
-    courseData.forEach((course) => {
-      const ctx = document.getElementById(`chart-${course.id}`);
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ["Total Students","First", "2:1", "2:2", "Third", "Fail"],
-          datasets: [{
-            label: course.title,
-            data: [
-              course.totalStudents,
-              course.gradeFirst,
-              course.gradeTwoOne,
-              course.gradeTwoTwo,
-              course.gradeThird,
-              course.gradeFail
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          indexAxis: 'x'
-        }
-      });
+          <script>
+            const courseData = <%-JSON.stringify(studentStats) %>.filter(Boolean);
+            courseData.forEach((course) => {
+              const ctx = document.getElementById(`chart-${course.id}`);
+              new Chart(ctx, {
+                type: 'bar',
+                data: {
+                  labels: ["First", "2:1", "2:2", "Third", "Fail"],
+                  datasets: [{
+                    label: course.title,
+                    data: [
+                      course.gradeFirst,
+                      course.gradeTwoOne,
+                      course.gradeTwoTwo,
+                      course.gradeThird,
+                      course.gradeFail
+                    ]
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  indexAxis: 'x',
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: "Graph to show distribution of classifications",
+                      font: { size: 16 }
+                    }
+                  }
+                  
+
+                }
+              });
 
 
-    })
-  </script>
-
+            })
+          </script>
+    </div>
+  </div>
 </body>
 
 </html>

@@ -115,7 +115,7 @@ app.get("/dashboard", checkAuth, async (req, res) => {
         const studentStats = [];
         let globalStudentCount = 0;
         stats.forEach((stat) => {
-
+            console.log(stat.title, "finalScore:", stat.finalScore, "awardID:", stat.awardID);
             if (!studentStats[stat.courseID]) {
                 studentStats[stat.courseID] = {
                     id: stat.courseID,
@@ -128,6 +128,7 @@ app.get("/dashboard", checkAuth, async (req, res) => {
                     gradeFail: 0,
                     allGradedScores: 0,
                     gradedStudents: 0
+
                 };
             }
 
@@ -159,8 +160,14 @@ app.get("/dashboard", checkAuth, async (req, res) => {
         //course also same as stat but labelled differently here for clarity. two loops to count 
         // both number of students and also number of classifications for each course
         studentStats.forEach((course) => {
+            console.log(course.title, "gradedStudents:", course.gradedStudents, "allGradedScores:", course.allGradedScores);
             course.studentCountPercentage = ((course.totalStudents / globalStudentCount) * 100).toFixed(0);
-            course.averageScore = (course.allGradedScores / course.gradedStudents).toFixed(2);
+            if (course.gradedStudents > 0) {
+                course.averageScore = (course.allGradedScores / course.gradedStudents).toFixed(2);
+            } else {
+                course.averageScore = "N/A";
+            }
+
 
         });
 
@@ -324,8 +331,28 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
     if (userAccessLevel === "admin") {
 
 
-        const userSQL = `SELECT * FROM systemuser`
-        const [users] = await db.promise().query(userSQL);
+        const userSQL = `SELECT systemuser.id, systemuser.firstName, systemuser.lastName, 
+            systemuser.email, systemuser.role, course.title AS courseTitle
+            FROM systemuser
+            LEFT JOIN managedcourses ON systemuser.id = managedcourses.systemUserID
+            LEFT JOIN course ON managedcourses.courseID = course.id`;
+     const [results] = await db.promise().query(userSQL);
+
+        const users = [];
+        results.forEach((user) => {
+            if (!users[user.id]) {
+                users[user.id] = {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    role: user.role,
+                    courses: []
+                };
+            }
+            if (user.courseTitle) users[user.id].courses.push(user.courseTitle);
+        });
+
         const coursesql = `SELECT * FROM course`
         const [courses] = await db.promise().query(coursesql);
         res.render("officermgmt", { courses, users, userAccessLevel });
@@ -363,7 +390,7 @@ VALUES (?, ?, ?, ?, ?)`
 
 
         res.send(`<H2> New officer succesfully added </h2> <br> 
-                click <a href = "/officermgmtt"> here </a> to return to officer management `);
+                click <a href = "/officermgmt"> here </a> to return to officer management `);
     } catch (error) {
         res.status(500).json(error);
         console.log(error);
@@ -487,13 +514,13 @@ app.post("/deleteofficer/", checkAuth, async (req, res) => {
 app.get("/coursemgmt", checkAuth, async (req, res) => {
     if (userAccessLevel === "admin") {
         const coursesql = `SELECT * FROM course`;
-      
+
 
 
         try {
             const [courses] = await db.promise().query(coursesql);
             console.log(courses[0]);
-            
+
 
             res.render("coursemgmt", { courses, userAccessLevel });
         } catch (error) {
@@ -566,9 +593,17 @@ app.get("/viewresults/:eid", checkAuth, async (req, res) => {
 
         const [award] = await db.promise().query(awardSQL, [studentId])
 
-        res.render("viewresults", { totalResults, courses, award, userAccessLevel });
+
+
+        const studentSQL = `SELECT student.id, firstName, lastName, courseID 
+    FROM student WHERE student.id = ?`;
+        const [student] = await db.promise().query(studentSQL, [studentId]);
+
+        res.render("viewresults", { totalResults, courses, award, student, userAccessLevel });
         console.log(award);
     }
+
+
 
     else {
         res.send(`<h2> Error, Access Denied </h2> <br>
@@ -616,11 +651,17 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
     let studentClassification;
 
     try {
+
         const [results] = await db.promise().query(resultsSQL, [studentId]);
+
+        if (results.length === 0) {
+            return res.send(`<h2>Cannot classify - student has no results entered.</h2>
+        <a href="/studentmgmt">Back</a>`);
+        }
 
         //STEP 1 - ensure where resits, the resit result is taken forwards.
         // cycles through original results and if module ID 
-        // doesnt exist or where resit is true then add to new map
+        // doesnt exist or where resit is true then add to new array
         const cleanedResults = [];
         results.forEach((result) => {
             if (!cleanedResults[result.moduleID] || result.resit === 1) {
@@ -658,6 +699,17 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
 
             }
         });
+
+        let classificationYear2Weight = 30;
+        let classificationYear3Weight = 30;
+        let classificationFail = 39.99;
+        let classificationThirdLower = 40;
+        let classificationThirdHigher = 49.99;
+        let classificationTwoTwoLower = 50;
+        let classificationTwoTwoHigher = 59.99;
+        let classificationTwoOneLower = 60;
+        let classificationTwoOneHigher = 69.99;
+        let classificationFirst = 70;
 
         //STEP 3 - Confirm classification based on final score, populate an array with both score and classificaiton
         function calcFinalClassification(y1isFail, y2, y3, TOTAL_CREDS) {

@@ -1,11 +1,84 @@
-/*
-.loginForm{
+.loginForm {
 
-    padding: 100px 50px;
-    margin: 125px 150px;
+    margin: 20%;
+    border-radius: 20px;
+    box-shadow: 5px 10px 20px 0px grey;
+}
+
+
+#headerNav{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    border-bottom: solid thin black;
+}
+
+
+header a.button:hover {
+  background-color: grey;
+  color: black;
+  }
+  
+
+@media (max-width: 768px) {
+  header a.button {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+.brandedLogo{
+padding: 10px;
+width: 100px;
+object-fit:scale-down;
+height: 100px;
 
 }
 
+header{
+    display: flex;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    flex-wrap: wrap;
+    height: auto;
+    align-items: flex-end;
+}
+#loginContainer {
+    display: flex;
+    padding: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.logoutForm {
+    width: 350px;
+     border-radius: 20px;
+     padding: 20px;
+}
+
+body {
+    background-color: rgb(227, 225, 225);
+}
+
+#studentMedia {
+    object-fit: fill;
+    border-radius: 25px;
+    height: 125px;
+    width: 125px;
+    border: solid thin white;
+}
+
+
+
+button {
+    border-radius: 15px;
+    
+
+}
+
+/*
 
 .officerForm{
     padding: 0;
@@ -17,7 +90,8 @@
 
 */
 
-.container {
+
+#studentTable {
     display: flex;
     padding: 10px;
     flex-wrap: wrap;
@@ -26,5 +100,6 @@
 .card {
     display: flex;
     padding: 10px;
+    border-radius: 20px;
+    box-shadow: 5px 10px 20px 0px grey;
 }
-

@@ -11,28 +11,32 @@
 
 <body>
 
-  <header>
-    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-      <a href="/landing" class="logo">HEDclass</a>
-      <a href="/dashboard" class="button">Dashboard</a>
-      <a href="/studentmgmt" class="button">Student Management</a>
-      <% } %>
-        <% if(userAccessLevel==="admin" ) { %>
-          <a href="/officermgmt" class="button"> Officer Management </a>
-          <a href="/coursemgmt" class="button"> Course Management</a>
-          <% } %>
-            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-              <a href="/resultsmgmt" class="button"> Results Management</a>
-    
-              <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                  userAccessLevel==="admin" ) { %>
-                  <a href="/logout" class="button">Logout</a>
-                  <% } %>
-                    (logged in as <Strong>
-                      <%= userAccessLevel %>
-                    </Strong>)
-  </header>
+    <header>
+        <div class="brandedLogo">
+            <img src="/media/logo2.jpg" id="logo" />
+        </div>
+        <a href="/landing" class="logo">HEDClass</a>
+        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+
+            <a href="/dashboard" class="button">Dashboard</a>
+            <a href="/studentmgmt" class="button">Student Management</a>
+            <% } %>
+                <% if(userAccessLevel==="admin" ) { %>
+                    <a href="/officermgmt" class="button"> Officer Management </a>
+                    <a href="/coursemgmt" class="button"> Course Management</a>
+                    <% } %>
+                        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+                            <a href="/resultsmgmt" class="button"> Results Management</a>
+                            <% } %>
+                                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                                    userAccessLevel==="admin" ) { %>
+                                    <a href="/logout" class="button">Logout</a>
+                                    <% } %>
+
+                                        <button> ( logged in as <Strong>
+                                                <%= userAccessLevel %>
+                                            </Strong>) </button>
+    </header>
 
     <table>
         <tbody>
@@ -48,8 +52,13 @@
                     <td> <b>email:</b>
                         <%= user.email %><br>
                     </td>
-                    <td> <b>course:</b>
+                    <td> <b>role:</b>
                         <%= user.role %><br>
+                    </td>
+                    <td> <b>courses:</b>
+                        <% user.courses.forEach((course)=> { %>
+                            <%= course %>,<br>
+                                <% }); %>
                     </td>
                     <td> <a href="/editofficer/<%=user.id%>"> Edit </a></td>
                     <td> <a href="/deleteofficer/<%=user.id%>"> Delete </a></td>
@@ -76,8 +85,9 @@
             </div>
             <div>
                 Role: <select name="officerRole" required>
-                    <option value="admin"> Admin </option>
-                    <option value="officer"> Officer</option>
+                    <option value="admin">Admin</option>
+                    <option value="officer(view)">Officer (View)</option>
+                    <option value="officer(edit)">Officer (Edit)</option>
                 </select>
             </div>
             <div>
