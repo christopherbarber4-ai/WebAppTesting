@@ -692,6 +692,8 @@ app.post("/editclassification", checkAuth, async (req, res) => {
 
 
 app.post("/addclassification/", checkAuth, async (req, res) => {
+
+    let studentClassification;
     const classificationForm = { ...req.body };
     const studentId = [classificationForm.studentId];
     const resultsSQL = `SELECT * FROM results
@@ -699,7 +701,10 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
     ON results.studentId = student.id
     INNER JOIN modules 
     ON results.moduleID = modules.id WHERE student.id = ?`;
-    let studentClassification;
+
+    const classificatonRulesSQL = `SELECT * FROM classificationRules`
+
+
 
     try {
 
@@ -751,16 +756,20 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
             }
         });
 
-        let classificationYear2Weight = 30;
-        let classificationYear3Weight = 30;
-        let classificationFail = 39.99;
-        let classificationThirdLower = 40;
-        let classificationThirdHigher = 49.99;
-        let classificationTwoTwoLower = 50;
-        let classificationTwoTwoHigher = 59.99;
-        let classificationTwoOneLower = 60;
-        let classificationTwoOneHigher = 69.99;
-        let classificationFirst = 70;
+        const [rules] = await db.promise().query(classificatonRulesSQL);
+        const standardRules = rules[0];
+
+
+        let classificationYear2Weight = standardRules.classificationYear2Weight;
+        let classificationYear3Weight = standardRules.classificationYear3Weight;
+        let classificationFail = standardRules.failBoundary;
+        let classificationThirdLower = standardRules.thirdLower;
+        let classificationThirdHigher = standardRules.thirdUpper;
+        let classificationTwoTwoLower = standardRules.twoTwoLower;
+        let classificationTwoTwoHigher = standardRules.twoTwoUpper;
+        let classificationTwoOneLower = standardRules.twoOneLower;
+        let classificationTwoOneHigher = standardRules.twoOneUpper;
+        let classificationFirst = standardRules.firstBoundary;
 
         //STEP 3 - Confirm classification based on final score, populate an array with both score and classificaiton
         function calcFinalClassification(y1isFail, y2, y3, TOTAL_CREDS) {
@@ -768,22 +777,22 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
             let classification = [0,];
 
             if (!y1isFail) {
-                classification[0] += (y2 / TOTAL_CREDS * 0.30) + (y3 / TOTAL_CREDS * 0.70);
+                classification[0] += (y2 / TOTAL_CREDS * classificationYear2Weight) + (y3 / TOTAL_CREDS * classificationYear3Weight);
             } else {
                 classification[1] = "Fail";
                 return classification;
             }
 
-            if (classification[0] <= 39.99) {
+            if (classification[0] <= classificationFail) {
                 classification[1] = "Fail";
             }
-            else if (classification[0] >= 40 && classification[0] <= 49.99) {
+            else if (classification[0] >= classificationThirdLower && classification[0] <= classificationThirdHigher) {
                 classification[1] = "Third Class Honours";
             }
-            else if (classification[0] >= 50 && classification[0] <= 59.99) {
+            else if (classification[0] >= classificationTwoTwoLower && classification[0] <= classificationTwoTwoHigher) {
                 classification[1] = "Lower Second Class (2:2)";
             }
-            else if (classification[0] >= 60 && classification[0] <= 69.99) {
+            else if (classification[0] >= classificationTwoOneLower && classification[0] <= classificationTwoOneHigher) {
                 classification[1] = "Upper Second Class (2:1)";
             }
             else {
