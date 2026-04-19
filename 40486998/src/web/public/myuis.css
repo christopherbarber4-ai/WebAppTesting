@@ -44,12 +44,20 @@ header{
 }
 #loginContainer {
     display: flex;
-    padding: 10px;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
 
 }
+
+#errorContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+
+}
+
 
 #landingContainer{
     border: thin solid black;

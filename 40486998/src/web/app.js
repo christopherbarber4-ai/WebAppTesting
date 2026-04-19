@@ -32,8 +32,7 @@ function checkAuth(req, res, next) {
 
         next();
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/"> back </a>`)
+        res.redirect("/error");
     }
 }
 
@@ -74,7 +73,7 @@ app.post("/login", async (req, res) => {
             userAccessLevel = rows[0].role;
             res.redirect("/landing");
         } else {
-            res.send(`<h2> error, login credentials incorrect`)
+            res.redirect("/error");
         }
     } catch (error) {
         res.status(500).send(error);
@@ -93,15 +92,14 @@ app.get("/landing", async (req, res) => {
         res.render("landing", { userData, userAccessLevel });
 
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 
 })
 
 app.get("/dashboard", checkAuth, async (req, res) => {
 
-    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)" || userAccessLevel === "admin") {
+    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
         const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, award.finalScore, student.awardID FROM course
     LEFT JOIN student 
     ON student.courseID = course.id
@@ -192,8 +190,7 @@ app.get("/dashboard", checkAuth, async (req, res) => {
 
         res.render("dashboard", { studentStats: studentStats.filter(Boolean), userAccessLevel });
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 });
 
@@ -202,6 +199,10 @@ app.get("/logout", (req, res) => {
     res.render("loggedout");
 
 
+});
+
+app.get("/error", (req, res) => {
+    res.render("error");
 });
 
 app.get("/studentmgmt", checkAuth, async (req, res) => {
@@ -217,8 +218,7 @@ app.get("/studentmgmt", checkAuth, async (req, res) => {
         res.render("studentmgmt", { students, userAccessLevel, message });
 
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
 
     }
 });
@@ -256,8 +256,7 @@ app.get("/editstudent/:eid", checkAuth, async (req, res) => {
         const [courses] = await db.promise().query(coursesql);
         res.render("studentupdate", { student, courses, userAccessLevel });
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 });
 
@@ -296,8 +295,7 @@ app.get("/deletestudent/:eid", checkAuth, async (req, res) => {
         res.render("studentdelete", { student, courses, userAccessLevel });
     }
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 });
 
@@ -351,8 +349,7 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
         res.render("officermgmt", { courses, users, userAccessLevel, message });
     }
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 });
 
@@ -408,8 +405,7 @@ app.get("/editofficer/:eid", checkAuth, async (req, res) => {
         res.render("officerupdate", { officer, courses, userAccessLevel });
     }
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
 
     }
 });
@@ -474,8 +470,7 @@ app.get("/deleteofficer/:eid", checkAuth, async (req, res) => {
         res.render("officerdelete", { officer, userAccessLevel });
     }
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+       res.redirect("/error");
     }
 })
 
@@ -530,8 +525,7 @@ app.get("/coursemgmt", checkAuth, async (req, res) => {
         }
     }
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 });
 
@@ -611,8 +605,7 @@ app.get("/viewresults/:eid", checkAuth, async (req, res) => {
 
 
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+       res.redirect("/error");
     }
 });
 
@@ -644,8 +637,7 @@ app.post("/addresult", checkAuth, async (req, res) => {
     }
 
     else {
-        res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 
 });
@@ -662,7 +654,7 @@ app.get("/editclassification/:eid", checkAuth, async (req, res) => {
         const [student] = await db.promise().query(studentssql, [studentId]);
         res.render("editclassification", { student, userAccessLevel });
     } else {
-        res.send(`<h2> Error, Access Denied </h2> <br><a href="/"> back </a>`);
+        res.redirect("/error");
     }
 });
 
@@ -691,15 +683,14 @@ app.post("/editclassification", checkAuth, async (req, res) => {
 
         try {
             await db.promise().query(updateAwardSQL, updateAwardParams);
-        req.session.message = `Classification for Student ${editClassificationform.studentFirstName} ${editClassificationform.studentLastName} successfully updated`;
-        res.redirect(`/viewresults/${editClassificationform.studentId}`);
+            req.session.message = `Classification for Student ${editClassificationform.studentFirstName} ${editClassificationform.studentLastName} successfully updated`;
+            res.redirect(`/viewresults/${editClassificationform.studentId}`);
         } catch (error) {
             res.status(500).json(error);
             console.log(error);
         }
     } else {
-             res.send(`<h2> Error, Access Denied </h2> <br>
-                <a href="/" back </a>`)
+        res.redirect("/error");
     }
 });
 
