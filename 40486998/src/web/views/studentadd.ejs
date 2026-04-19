@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
     <link rel="stylesheet" href="myuis.css">
-    <title>Edit Student</title>
+    <title>Add Student</title>
 </head>
 
 <body>
@@ -37,33 +37,50 @@
     </header>
 
     <p>
-        To update a Student record, please populate all required fields below
+        To add a Student record, please populate all required fields below
     </p>
     <hr>
+    <% if(userAccessLevel==="officer(edit)" ) { %>
 
-    <form action="/editstudent" method="POST">
+        <div class="studentForm">
+            <form action="/addstudent" method="POST">
+                <div>
+                    First Name: <input name="studentFirstName" required>
+                </div>
+                <div>
+                    Last Name: <input name="studentLastName" required>
+                </div>
+                <div>
+                    Email: <input name="studentEmail" required>
+                </div>
+                <div>
+                    Graduation Year: <select name="graduationYear" required>
+                        <option value="25/26"> 25/26 </option>
+                        <option value="26/27"> 26/27</option>
+                        <option value="27/28"> 27/28</option>
 
+                    </select>
 
-        User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
+                </div>
+                <div>
+                    Course: <select name="studentCourseName" required>
+                        <% students.forEach ((student)=> {%>
+                            <option value="<%= student.courseID%>">
+                                <%= student.title%>
+                            </option>
+                            <%}); %>
+                    </select>
+                </div>
+
+                <div>
+                    <button>Add student</button>
+                </div>
+            </form>
         </div>
-        <div>
-            Student First Name: <input type="text" name="studentFirstName" value="<%=student[0].firstName %>">
 
-            <div>
-
-                Student Last Name: <input type="text" name="studentLastName" value="<%=student[0].lastName %>">
-            </div>
-            <div>
-                Student email address: <input type="text" name="studentEmail" value="<%=student[0].email %>">
-            </div>
-            <div>
-                Graduation Year: <input type="text" name="studentGradYr" value="<%=student[0].graduationYear %>">
-            </div>
+        <% } %>
 
 
-            </p>
-            <input type="submit" value="update">
-    </form>
 
 
 </body>

@@ -87,11 +87,14 @@ body {
 
 button {
     border-radius: 15px;
-    border: thin solid black;
+
     
 
 }
 
+#classificationButton{
+    color: red;
+}
 /*
 
 .officerForm{
@@ -110,6 +113,13 @@ button {
     padding: 10px;
     flex-wrap: wrap;
 }
+
+#resultsTable {
+    display: flex;
+    padding: 10px;
+    flex-wrap: wrap;
+}
+
 
 .card {
     display: flex;

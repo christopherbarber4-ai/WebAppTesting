@@ -70,7 +70,8 @@ app.post("/login", async (req, res) => {
         if (rows.length > 0 && rows[0].password === userPass) {
             rows[0].password == userPass;
             req.session.authen = rows[0].id;
-            userAccessLevel = rows[0].role;
+            req.session.userAccessLevel = rows[0].role;
+
             res.redirect("/landing");
         } else {
             res.redirect("/error");
@@ -89,6 +90,7 @@ app.get("/landing", async (req, res) => {
         const checkLogin = `SELECT * FROM systemuser WHERE id = ?`
         const [rows] = await db.promise().query(checkLogin, [uID])
         const userData = rows[0];
+        const userAccessLevel = req.session.userAccessLevel;
         res.render("landing", { userData, userAccessLevel });
 
     } else {
@@ -98,8 +100,9 @@ app.get("/landing", async (req, res) => {
 })
 
 app.get("/dashboard", checkAuth, async (req, res) => {
-
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+
         const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, award.finalScore, student.awardID FROM course
     LEFT JOIN student 
     ON student.courseID = course.id
@@ -206,6 +209,7 @@ app.get("/error", (req, res) => {
 });
 
 app.get("/studentmgmt", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
         const message = req.session.message;
         req.session.message = null;
@@ -223,7 +227,28 @@ app.get("/studentmgmt", checkAuth, async (req, res) => {
     }
 });
 
+app.get("/studentadd", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+        const message = req.session.message;
+        req.session.message = null;
+
+        const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID, course.title, award.classification  FROM student
+    INNER JOIN course 
+    ON student.courseID = course.id
+    LEFT JOIN award
+    ON student.awardid = award.id `;
+        const [students] = await db.promise().query(studentssql);
+        res.render("studentadd", { userAccessLevel, message, students });
+
+    } else {
+        res.redirect("/error");
+
+    }
+});
+
 app.post("/addstudent", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     const addStudentForm = { ...req.body };
     const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
 VALUES (?, ?, ?, ?, ?)`
@@ -248,6 +273,7 @@ VALUES (?, ?, ?, ?, ?)`
 
 
 app.get("/editstudent/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(edit)") {
         const studentId = req.params.eid;
         const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
@@ -261,6 +287,7 @@ app.get("/editstudent/:eid", checkAuth, async (req, res) => {
 });
 
 app.post("/editstudent", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     const updatestudentForm = { ...req.body };
     const updateSQL = `UPDATE student SET firstName = ?, lastName = ?, 
     email = ?, graduationYear = ?
@@ -286,6 +313,7 @@ app.post("/editstudent", checkAuth, async (req, res) => {
 });
 
 app.get("/deletestudent/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(edit)") {
         const studentId = req.params.eid;
         const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
@@ -318,6 +346,7 @@ app.post("/deletestudent/", checkAuth, async (req, res) => {
 
 
 app.get("/officermgmt", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
         const message = req.session.message;
         req.session.message = null;
@@ -392,6 +421,7 @@ VALUES (?, ?, ?, ?, ?)`
 
 
 app.get("/editofficer/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
 
     if (userAccessLevel === "admin") {
 
@@ -412,6 +442,8 @@ app.get("/editofficer/:eid", checkAuth, async (req, res) => {
 
 
 app.post("/editofficer", checkAuth, async (req, res) => {
+
+
     const updateOfficerForm = { ...req.body };
     const updatOfficerSQL = `UPDATE systemuser SET firstName = ?, lastName = ?, 
     email = ?, role = ?, password = ?
@@ -441,17 +473,9 @@ app.post("/editofficer", checkAuth, async (req, res) => {
         }
 
 
-        res.send(`<H2> Changes have been succesfully made. </h2> <br>User 
-            ${updateOfficerForm.officerid} has been updated to reflect:
-            <ul>
-            <li> First Name: ${updateOfficerForm.officerFirstName}</li>
-            <li> Last Name: ${updateOfficerForm.officerLastName}</li>
-            <li> Email Address: ${updateOfficerForm.officerEmail}</li>
-            <li> Role: ${updateOfficerForm.officerRole}</li>
-            <li> CourseID: ${updateOfficerForm.courseName}</li>
-            </ul> <br> 
-                Please click <a href = "/officermgmt"> here </a> to return to officer
-                management `)
+        req.session.message = `Officer ${updateOfficerForm.officerFirstName} ${updateOfficerForm.officerLastName} successfully updated`;
+        res.redirect("/officermgmt");
+
 
     } catch (error) {
         res.status(500).json(error);
@@ -462,15 +486,18 @@ app.post("/editofficer", checkAuth, async (req, res) => {
 });
 
 app.get("/deleteofficer/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
+        const message = req.session.message;
+        req.session.message = null;
         const officerId = req.params.eid;
         const singleofficerSQL = `SELECT * FROM systemuser WHERE id = ?`
         const [officer] = await db.promise().query(singleofficerSQL, [officerId]);
         console.log(officer);
-        res.render("officerdelete", { officer, userAccessLevel });
+        res.render("officerdelete", { officer, userAccessLevel, message });
     }
     else {
-       res.redirect("/error");
+        res.redirect("/error");
     }
 })
 
@@ -494,14 +521,14 @@ app.post("/deleteofficer/", checkAuth, async (req, res) => {
         console.log(error);
     }
 
-    res.send(`<h2> Officer ${deleteOfficerForm.officerid} succesfully deleted.
-         </h2>  <br>
-        Please click <a href="/officermgmt"> here </a> to return to officer management`);
+    req.session.message = `Officer ${deleteOfficerForm.officerFirstName} ${deleteOfficerForm.officerLastName} successfully added`;
+    res.redirect("/officermgmt");
 });
 
 
 
 app.get("/coursemgmt", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
         const message = req.session.message || null;
         req.session.message = null;
@@ -530,6 +557,7 @@ app.get("/coursemgmt", checkAuth, async (req, res) => {
 });
 
 app.post("/addcourse", checkAuth, async (req, res) => {
+
     const addCourseForm = { ...req.body };
     const insertCourseSQL = `INSERT INTO course (title)
 VALUES (?)`
@@ -563,6 +591,7 @@ VALUES (?)`
 //VIEW ALL RESULTS
 
 app.get("/viewresults/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
 
         const message = req.session.message;
@@ -598,18 +627,70 @@ app.get("/viewresults/:eid", checkAuth, async (req, res) => {
     FROM student WHERE student.id = ?`;
         const [student] = await db.promise().query(studentSQL, [studentId]);
 
+
+
         res.render("viewresults", { totalResults, courses, award, student, userAccessLevel, message });
-        console.log(award);
+
     }
 
 
 
     else {
-       res.redirect("/error");
+        res.redirect("/error");
     }
 });
 
+app.get("/resultadd/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+
+        const message = req.session.message;
+        req.session.message = null;
+
+        const studentId = req.params.eid;
+        const resultsSQL = `SELECT * FROM results
+    INNER JOIN student 
+    ON results.studentId = student.id
+    INNER JOIN modules 
+    ON results.moduleID = modules.id WHERE student.id = ?`;
+        const [totalResults] = await db.promise().query(resultsSQL, [studentId]);
+
+
+        const coursesql = `SELECT modules.id AS moduleID, modules.moduleName, modules.creditValue, modules.year 
+            FROM student
+            INNER JOIN course ON student.courseID = course.id
+            INNER JOIN modules ON modules.courseID = course.id
+            WHERE student.id = ?`;
+
+        const [courses] = await db.promise().query(coursesql, [studentId]);
+
+        const awardSQL = `SELECT * FROM student 
+    INNER JOIN award
+    ON student.awardID = award.id
+    WHERE student.id = ?`
+
+        const [award] = await db.promise().query(awardSQL, [studentId])
+
+
+
+        const studentSQL = `SELECT student.id, firstName, lastName, courseID 
+    FROM student WHERE student.id = ?`;
+        const [student] = await db.promise().query(studentSQL, [studentId]);
+
+      
+        res.render("resultadd", { totalResults, courses, award, student, userAccessLevel, message });
+
+    }
+
+    else {
+        res.redirect("/error");
+    }
+});
+
+
+
 app.post("/addresult", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
         const addResultForm = { ...req.body };
         const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
@@ -643,6 +724,7 @@ app.post("/addresult", checkAuth, async (req, res) => {
 });
 
 app.get("/editclassification/:eid", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(edit)") {
         const studentId = req.params.eid;
         const studentssql = `SELECT student.id, student.firstName, student.lastName,
@@ -659,6 +741,7 @@ app.get("/editclassification/:eid", checkAuth, async (req, res) => {
 });
 
 app.post("/editclassification", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(edit)") {
         const editClassificationform = { ...req.body };
         let manualOverride;
@@ -696,7 +779,7 @@ app.post("/editclassification", checkAuth, async (req, res) => {
 
 
 app.post("/addclassification/", checkAuth, async (req, res) => {
-
+    const userAccessLevel = req.session.userAccessLevel;
     let studentClassification;
     const classificationForm = { ...req.body };
     const studentId = [classificationForm.studentId];

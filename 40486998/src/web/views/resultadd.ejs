@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="/myuis.css">
+  <title>Add Result</title>
+</head>
+
+<body>
+
+  <header>
+
+    <a href="/landing" class="logo">HEDClass</a>
+    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+
+      <a href="/dashboard" class="button">Dashboard</a>
+      <a href="/studentmgmt" class="button">Student Management</a>
+      <% } %>
+        <% if(userAccessLevel==="admin" ) { %>
+          <a href="/officermgmt" class="button"> Officer Management </a>
+          <a href="/coursemgmt" class="button"> Course Management</a>
+          <% } %>
+            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+              <a href="/resultsmgmt" class="button"> Results Management</a>
+              <% } %>
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                  userAccessLevel==="admin" ) { %>
+                  <a href="/logout" class="button">Logout</a>
+                  <% } %>
+
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
+  </header>
+
+  <p>
+    To add a Module Restult record, please populate all required fields below
+  </p>
+  <hr>
+  <% if(userAccessLevel==="officer(edit)" ) { %>
+
+
+    <div class="resultForm">
+      <form action="/addresult" method="POST">
+        <div>
+          StudentId: <input type="text" name="studentId" readonly value="<%=student[0].id%>">
+        </div>
+        <div>
+          CourseId: <input type="text" name="courseId" readonly value="<%=student[0].courseID%>">
+        </div>
+        <div>
+          First Name: <input type="text" name="studentFirstName" readonly value="<%=student[0].firstName%>" required>
+        </div>
+        <div>
+          Last Name: <input type="text" name="studentLastName" readonly value="<%=student[0].lastName%>" required>
+        </div>
+        <div>
+          Module Name: <select name="studentModule" required>
+            <% courses.forEach ((course)=> {%>
+              <option value="<%=course.moduleID%>" <% if (course.moduleID=course.moduleID) {%>
+                selected <% } %> >
+                  <%= course.moduleName%>
+              </option>
+              <%}); %>
+                </option>
+          </select>
+        </div>
+        <div>
+          Module Result: <input type="number" step="0.01" name="moduleScore" value="0" min="0" max="100" required>
+        </div>
+        <div>
+          Resit?: <select name="isResit" required>
+            <option value=1> Yes </option>
+            <option value=0> No </option>
+          </select>
+        </div>
+
+        <div>
+          <button>Add Result</button>
+        </div>
+
+      </form>
+
+      <form action="/addclassification" method="POST">
+        <div>
+          StudentId: <input type="text" name="studentId" readonly value="<%=student[0].id%>">
+        </div>
+        <div>
+          <button>Add Classification</button>
+        </div>
+      </form>
+      <form>
+        <% if (award.length> 0 && userAccessLevel === "officer(edit)") { %>
+          <button><a href="/editclassification/<%=student[0].id%>">Edit Classification</a> </button>
+          <% } %>
+      </form>
+
+      <% } %>
+
+
+</body>
+
+</html>

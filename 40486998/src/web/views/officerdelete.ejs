@@ -13,6 +13,11 @@
 
 <body>
 
+      <% if (message !== 'undefined' && message) { %>
+  <span class="toast" id="successToast"><%= message %></span>
+<% } %>
+
+
   <header>
     <a href="/landing" class="logo">HEDClass</a>
     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
@@ -36,6 +41,14 @@
                         <%= userAccessLevel %>
                       </Strong>) </button>
   </header>
+
+
+    <p>
+        To delete an Officer record, please confirm below
+    </p>
+    <hr>
+
+  
 
     <form action="/deleteofficer" method="POST">
         <p>
