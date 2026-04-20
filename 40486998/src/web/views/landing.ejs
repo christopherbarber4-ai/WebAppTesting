@@ -21,8 +21,10 @@
           <% } %>
             <% if(userAccessLevel==="admin" ) { %>
               <a href="/officermgmt" class="button"> Officer Management </a>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
                     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
                       userAccessLevel==="admin" ) { %>
                       <a href="/logout" class="button">Logout</a>
@@ -32,7 +34,6 @@
                             <%= userAccessLevel %>
                           </Strong>) </button>
       </header>
-
 
 <div class = "container" id ="landingContainer">
   dvkjbsdkjdsn

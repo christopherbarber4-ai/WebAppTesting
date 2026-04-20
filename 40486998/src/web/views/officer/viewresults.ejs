@@ -27,18 +27,19 @@
           <% } %>
             <% if(userAccessLevel==="admin" ) { %>
               <a href="/officermgmt" class="button"> Officer Management </a>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                  userAccessLevel==="admin" ) { %>
-                  <a href="/logout" class="button">Logout</a>
-                  <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
 
-                    <button> ( logged in as <Strong>
-                        <%= userAccessLevel %>
-                      </Strong>) </button>
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
       </header>
-
       <% if(userAccessLevel==="officer(edit)" ) { %>
         <p>
           Here you can: <button class="headerButton"> <a href="/resultadd/<%= student[0].id %>"> Add New Module Result
@@ -107,12 +108,13 @@
 
           </div>
         </div>
-     
+
+          <% if(userAccessLevel==="officer(edit)" ) { %>
         <p>
           Course Classification Options for: <b>(<%= student[0].firstName %>
               <%= student[0].lastName %>) </b>:
         </p>
-        <% if(userAccessLevel==="officer(edit)" ) { %>
+      
           <form action="/addclassification" method="POST" class="style-Override">
             <input type="hidden" name="studentId" value="<%= student[0].id %>">
             <input type="submit" value="Auto-Calculate Classification" class="headerButton">

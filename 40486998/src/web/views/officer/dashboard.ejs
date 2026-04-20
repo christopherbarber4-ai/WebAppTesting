@@ -23,8 +23,10 @@
           <% } %>
             <% if(userAccessLevel==="admin" ) { %>
               <a href="/officermgmt" class="button"> Officer Management </a>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
                     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
                       userAccessLevel==="admin" ) { %>
                       <a href="/logout" class="button">Logout</a>
@@ -46,7 +48,7 @@
   <div class="container" id="dashboardTable">
     <div class="row">
       <%studentStats.forEach((course)=>{ %>
-        <div class="col-sm-12 col-md-12 col-lg-12">
+        <div class="col-sm-12 col-md-6 col-lg-6">
           <div class="card fluid">
             <div class="section double-padded"> <b> Course Name:</b>
               <%= course.title %>

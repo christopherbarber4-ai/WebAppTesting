@@ -6,10 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
     <link rel="stylesheet" href="myuis.css">
-    <title>Add Student</title>
+    <title>Delete Officer</title>
 </head>
 
+
+
 <body>
+
+    <% if (message !=='undefined' && message) { %>
+        <span class="toast" id="successToast">
+            <%= message %>
+        </span>
+        <% } %>
+
 
       <header>
 
@@ -21,8 +30,10 @@
           <% } %>
             <% if(userAccessLevel==="admin" ) { %>
               <a href="/officermgmt" class="button"> Officer Management </a>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
                     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
                       userAccessLevel==="admin" ) { %>
                       <a href="/logout" class="button">Logout</a>
@@ -34,52 +45,39 @@
       </header>
 
 
-    <p>
-        To add a Student record, please populate all required fields below
-    </p>
-    <hr>
-    <% if(userAccessLevel==="officer(edit)" ) { %>
 
-        <div class="studentForm">
-            <form action="/addstudent" method="POST">
-                <div>
-                    First Name: <input name="studentFirstName" required>
-                </div>
-                <div>
-                    Last Name: <input name="studentLastName" required>
-                </div>
-                <div>
-                    Email: <input name="studentEmail" required>
-                </div>
-                <div>
-                    Graduation Year: <select name="graduationYear" required>
-                        <option value="25/26"> 25/26 </option>
-                        <option value="26/27"> 26/27</option>
-                        <option value="27/28"> 27/28</option>
+            <p>
+                To delete an Officer record, please confirm below
+            </p>
+            <hr>
 
-                    </select>
 
+
+            <form action="/deleteofficer" method="POST">
+                <p>
+                <div>
+                    User id: <input type="text" name="officerid" readonly value="<%=officer[0].id %>">
                 </div>
                 <div>
-                    Course: <select name="studentCourseName" required>
-                        <% courses.forEach ((course)=> {%>
-                            <option value="<%= course.id%>">
-                                <%= course.title%>
-                            </option>
-                            <%}); %>
+                    User First Name: <input type="text" name="officerFirstName" readonly
+                        value="<%=officer[0].firstName %>">
+                </div>
+                <div>
+                    User Last Name: <input type="text" name="officerLastName" readonly
+                        value="<%=officer[0].lastName %>">
+                </div>
+                <div>
+                    User email address: <input type="text" name="officerEmail" readonly value="<%=officer[0].email %>">
+                </div>
+                <div>
+                    User Role: <select name="officerRole" readonly value="<%=officer[0].role %>">
+                        <option value="admin"> Admin </option>
+                        <option value="officer"> Officer</option>
                     </select>
                 </div>
-
-                <div>
-                    <button>Add student</button>
-                </div>
+                </p>
+                <input type="submit" value="DELETE" onclick="return confirm('Are you sure?')">
             </form>
-        </div>
-
-        <% } %>
-
-
-
 
 </body>
 

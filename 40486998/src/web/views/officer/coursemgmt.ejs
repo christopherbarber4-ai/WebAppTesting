@@ -27,18 +27,19 @@
           <% } %>
             <% if(userAccessLevel==="admin" ) { %>
               <a href="/officermgmt" class="button"> Officer Management </a>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                  userAccessLevel==="admin" ) { %>
-                  <a href="/logout" class="button">Logout</a>
-                  <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
 
-                    <button> ( logged in as <Strong>
-                        <%= userAccessLevel %>
-                      </Strong>) </button>
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
       </header>
-
 
 
       <h3>Welcome to Course Management</h3>
@@ -91,9 +92,11 @@
                     <div class="section double-padded">
                       <b>Course First Boundary:</b> ><%= course.firstBoundary %>
                     </div>
-                    <div class="section double-padded">
-                      <button> <a href="/editcourserules/<%= course.id %>">Edit</a></button>
-                    </div>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+                      <div class="section double-padded">
+                        <button> <a href="/editcourserules/<%= course.id %>">Edit</a></button>
+                      </div>
+                      <%}%>
                   </div>
                 </div>
 

@@ -9,6 +9,8 @@
     <title>Edit Student</title>
 </head>
 
+<body>
+
       <header>
 
         <a href="/landing" class="logo">HEDClass</a>
@@ -19,8 +21,10 @@
           <% } %>
             <% if(userAccessLevel==="admin" ) { %>
               <a href="/officermgmt" class="button"> Officer Management </a>
-              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
                     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
                       userAccessLevel==="admin" ) { %>
                       <a href="/logout" class="button">Logout</a>
@@ -33,32 +37,32 @@
 
 
     <p>
-        To delete a Student record, please confirm below
+        To update a Student record, please populate all required fields below
     </p>
     <hr>
 
-<body>
+    <form action="/editstudent" method="POST">
 
-    <form action="/deletestudent" method="POST">
-        <p>
-        <div>
-            User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
+
+        User id: <input type="text" name="studentid" readonly value="<%=student[0].id %>">
         </div>
         <div>
-            Student First Name: <input type="text" name="studentFirstName" readonly value="<%=student[0].firstName %>">
-        </div>
-        <div>
-            Student Last Name: <input type="text" name="studentLastName" readonly value="<%=student[0].lastName %>">
-        </div>
-        <div>
-            Student email address: <input type="text" name="studentEmail" readonly value="<%=student[0].email %>">
-        </div>
-        <div>
-            Graduation Year: <input type="text" name="studentGradYr" readonly value="<%=student[0].graduationYear %>">
-        </div>
- 
-        </p>
-        <input type="submit" value="DELETE" onclick="return confirm('Are you sure?')">
+            Student First Name: <input type="text" name="studentFirstName" value="<%=student[0].firstName %>">
+
+            <div>
+
+                Student Last Name: <input type="text" name="studentLastName" value="<%=student[0].lastName %>">
+            </div>
+            <div>
+                Student email address: <input type="text" name="studentEmail" value="<%=student[0].email %>">
+            </div>
+            <div>
+                Graduation Year: <input type="text" name="studentGradYr" value="<%=student[0].graduationYear %>">
+            </div>
+
+
+            </p>
+            <input type="submit" value="update">
     </form>
 
 

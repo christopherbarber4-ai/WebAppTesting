@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+    <link rel="stylesheet" href="myuis.css">
+    <title>Add Course</title>
+</head>
+
+<body>
+
+    <% if (message !=='undefined' && message) { %>
+        <span class="toast" id="successToast">
+            <%= message %>
+        </span>
+        <% } %>
+
+      <header>
+
+        <a href="/landing" class="logo">HEDClass</a>
+        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+
+          <a href="/dashboard" class="button">Dashboard</a>
+          <a href="/studentmgmt" class="button">Student Management</a>
+          <% } %>
+            <% if(userAccessLevel==="admin" ) { %>
+              <a href="/officermgmt" class="button"> Officer Management </a>
+              <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel === "admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
+
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
+      </header>
+
+
+
+            <h3>Welcome to Course Management</h3>
+            <% if(userAccessLevel==="admin" ) { %>
+
+
+                <p>To create a new course please fill out all fields... Please note all courses will be loaded
+                    initially
+                    with the
+                    University's standard classification rules</p>
+
+                <div class="courseForm">
+                    <form action="/addcourse" method="post">
+                        <div>
+                            Course Title: <input name="courseTitle" required>
+                        </div>
+
+                        <div>
+                            <button>Add Course</button>
+                        </div>
+                    </form>
+                </div>
+
+                <%}%>
+
+</body>
+
+</html>
