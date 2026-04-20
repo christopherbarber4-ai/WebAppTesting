@@ -29,86 +29,94 @@
               <a href="/officermgmt" class="button"> Officer Management </a>
               <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-                  <a href="/resultsmgmt" class="button"> Results Management</a>
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                  userAccessLevel==="admin" ) { %>
+                  <a href="/logout" class="button">Logout</a>
                   <% } %>
-                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                      userAccessLevel==="admin" ) { %>
-                      <a href="/logout" class="button">Logout</a>
-                      <% } %>
 
-                        <button> ( logged in as <Strong>
-                            <%= userAccessLevel %>
-                          </Strong>) </button>
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
       </header>
 
 
 
       <h3>Welcome to Course Management</h3>
-      <p>
-        Here you can either: <button> View/Edit </button> or <button>
-          <a href="#studentForm"> Add new </a> </button>:
-      </p>
-      <hr>
+      <% if(userAccessLevel==="admin" ) { %>
 
-      <div class="container" id="studentTable">
-        <div class="row">
-          <%courses.forEach((course)=>{ %>
-            <div class="col-sm-12 col-md-6 col-lg-4">
-              <div class="card fluid">
-                <div class="section double-padded">
-                  <b>Course Title:</b> <%= course.title %>
+        <p>
+          Here you can either: <button class="headerButton"> <a href="/coursemgmt"> View Courses
+            </a></button> or <button class="headerButton"> <a href="/courseadd"> Add new Course
+            </a> </button>
+        </p>
+        <hr>
+        <%}%>
+          <div class="container" id="studentTable">
+            <div class="row">
+              <%courses.forEach((course)=>{ %>
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                  <div class="card fluid">
+                    <div class="section double-padded">
+                      <b>Course Title:</b>
+                      <%= course.title %>
+                    </div>
+                    <div class="section double-padded">
+                      <b> Course y2 Weight:</b>
+                      <%= course.classificationYear2Weight %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course y3 Weight:</b>
+                      <%= course.classificationYear3Weight %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course Max Resit Score:</b>
+                      <%= course.resitMax %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course Fail Threshold:</b>
+                      <%= course.failBoundary %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course Third Range:</b>
+                      <%= course.thirdLower %> - <%= course.thirdUpper %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course Two Two Range:</b>
+                      <%= course.twoTwoLower %> - <%= course.twoTwoUpper %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course Two One Range:</b>
+                      <%= course.twoOneLower %> - <%= course.twoOneUpper %>
+                    </div>
+                    <div class="section double-padded">
+                      <b>Course First Boundary:</b> ><%= course.firstBoundary %>
+                    </div>
+                    <div class="section double-padded">
+                      <button> <a href="/editcourserules/<%= course.id %>">Edit</a></button>
+                    </div>
+                  </div>
                 </div>
-                <div class="section double-padded">
-                  <b> Course y2 Weight:</b> <%= course.classificationYear2Weight %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course y3 Weight:</b> <%= course.classificationYear3Weight %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course Max Resit Score:</b> <%= course.resitMax %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course Fail Threshold:</b> <%= course.failBoundary %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course Third Range:</b> <%= course.thirdLower %> - <%= course.thirdUpper %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course Two Two Range:</b> <%= course.twoTwoLower %> - <%= course.twoTwoUpper %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course Two One Range:</b> <%= course.twoOneLower %> - <%= course.twoOneUpper %>
-                </div>
-                <div class="section double-padded">
-                  <b>Course First Boundary:</b> ><%= course.firstBoundary %>
-                </div>
-                <div class="section double-padded">
-                  <button> <a href="/editcourserules/<%= course.id %>">Edit</a></button>
-                </div>
-              </div>
+
+                <% }); %>
             </div>
-
-            <% }); %>
-        </div>
-      </div>
-
-      <p>To create a new course please fill out all fields... Please note all courses will be loaded
-        initially
-        with the
-        University's standard classification rules</p>
-
-      <div class="courseForm">
-        <form action="/addcourse" method="post">
-          <div>
-            Course Title: <input name="courseTitle" required>
           </div>
 
-          <div>
-            <button>Add Course</button>
+          <p>To create a new course please fill out all fields... Please note all courses will be loaded
+            initially
+            with the
+            University's standard classification rules</p>
+
+          <div class="courseForm">
+            <form action="/addcourse" method="post">
+              <div>
+                Course Title: <input name="courseTitle" required>
+              </div>
+
+              <div>
+                <button>Add Course</button>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
 
 </body>
 

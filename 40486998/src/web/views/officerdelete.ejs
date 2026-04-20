@@ -13,66 +13,69 @@
 
 <body>
 
-      <% if (message !== 'undefined' && message) { %>
-  <span class="toast" id="successToast"><%= message %></span>
-<% } %>
+    <% if (message !=='undefined' && message) { %>
+        <span class="toast" id="successToast">
+            <%= message %>
+        </span>
+        <% } %>
 
 
-  <header>
-    <a href="/landing" class="logo">HEDClass</a>
-    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+      <header>
 
-      <a href="/dashboard" class="button">Dashboard</a>
-      <a href="/studentmgmt" class="button">Student Management</a>
-      <% } %>
-        <% if(userAccessLevel==="admin" ) { %>
-          <a href="/officermgmt" class="button"> Officer Management </a>
-          <a href="/coursemgmt" class="button"> Course Management</a>
+        <a href="/landing" class="logo">HEDClass</a>
+        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+
+          <a href="/dashboard" class="button">Dashboard</a>
+          <a href="/studentmgmt" class="button">Student Management</a>
           <% } %>
-            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-              <a href="/resultsmgmt" class="button"> Results Management</a>
+            <% if(userAccessLevel==="admin" ) { %>
+              <a href="/officermgmt" class="button"> Officer Management </a>
+              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                  userAccessLevel==="admin" ) { %>
-                  <a href="/logout" class="button">Logout</a>
-                  <% } %>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
 
-                    <button> ( logged in as <Strong>
-                        <%= userAccessLevel %>
-                      </Strong>) </button>
-  </header>
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
+      </header>
 
 
-    <p>
-        To delete an Officer record, please confirm below
-    </p>
-    <hr>
 
-  
+            <p>
+                To delete an Officer record, please confirm below
+            </p>
+            <hr>
 
-    <form action="/deleteofficer" method="POST">
-        <p>
-        <div>
-            User id: <input type="text" name="officerid" readonly value="<%=officer[0].id %>">
-        </div>
-        <div>
-            User First Name: <input type="text" name="officerFirstName" readonly value="<%=officer[0].firstName %>">
-        </div>
-        <div>
-            User Last Name: <input type="text" name="officerLastName" readonly value="<%=officer[0].lastName %>">
-        </div>
-        <div>
-            User email address: <input type="text" name="officerEmail" readonly value="<%=officer[0].email %>">
-        </div>
-        <div>
-            User Role: <select name="officerRole" readonly value="<%=officer[0].role %>">
-                <option value="admin"> Admin </option>
-                <option value="officer"> Officer</option>
-            </select>
-        </div>
-        </p>
-        <input type="submit" value="DELETE" onclick="return confirm('Are you sure?')">
-    </form>
+
+
+            <form action="/deleteofficer" method="POST">
+                <p>
+                <div>
+                    User id: <input type="text" name="officerid" readonly value="<%=officer[0].id %>">
+                </div>
+                <div>
+                    User First Name: <input type="text" name="officerFirstName" readonly
+                        value="<%=officer[0].firstName %>">
+                </div>
+                <div>
+                    User Last Name: <input type="text" name="officerLastName" readonly
+                        value="<%=officer[0].lastName %>">
+                </div>
+                <div>
+                    User email address: <input type="text" name="officerEmail" readonly value="<%=officer[0].email %>">
+                </div>
+                <div>
+                    User Role: <select name="officerRole" readonly value="<%=officer[0].role %>">
+                        <option value="admin"> Admin </option>
+                        <option value="officer"> Officer</option>
+                    </select>
+                </div>
+                </p>
+                <input type="submit" value="DELETE" onclick="return confirm('Are you sure?')">
+            </form>
 
 </body>
 

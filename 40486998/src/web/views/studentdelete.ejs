@@ -5,34 +5,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
-    <link rel="stylesheet" href="myuis.css">
+    <link rel="stylesheet" href="/myuis.css">
     <title>Edit Student</title>
 </head>
 
-    <header>
+      <header>
 
         <a href="/landing" class="logo">HEDClass</a>
         <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
-            <a href="/dashboard" class="button">Dashboard</a>
-            <a href="/studentmgmt" class="button">Student Management</a>
-            <% } %>
-                <% if(userAccessLevel==="admin" ) { %>
-                    <a href="/officermgmt" class="button"> Officer Management </a>
-                    <a href="/coursemgmt" class="button"> Course Management</a>
-                    <% } %>
-                        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-                            <a href="/resultsmgmt" class="button"> Results Management</a>
-                            <% } %>
-                                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                                    userAccessLevel==="admin" ) { %>
-                                    <a href="/logout" class="button">Logout</a>
-                                    <% } %>
+          <a href="/dashboard" class="button">Dashboard</a>
+          <a href="/studentmgmt" class="button">Student Management</a>
+          <% } %>
+            <% if(userAccessLevel==="admin" ) { %>
+              <a href="/officermgmt" class="button"> Officer Management </a>
+              <a href="/coursemgmt" class="button"> Course Management</a>
+              <% } %>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
 
-                                        <button> ( logged in as <Strong>
-                                                <%= userAccessLevel %>
-                                            </Strong>) </button>
-    </header>
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
+      </header>
+
 
     <p>
         To delete a Student record, please confirm below

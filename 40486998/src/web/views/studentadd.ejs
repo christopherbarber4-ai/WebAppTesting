@@ -11,30 +11,28 @@
 
 <body>
 
-    <header>
+      <header>
 
         <a href="/landing" class="logo">HEDClass</a>
         <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
-            <a href="/dashboard" class="button">Dashboard</a>
-            <a href="/studentmgmt" class="button">Student Management</a>
-            <% } %>
-                <% if(userAccessLevel==="admin" ) { %>
-                    <a href="/officermgmt" class="button"> Officer Management </a>
-                    <a href="/coursemgmt" class="button"> Course Management</a>
-                    <% } %>
-                        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-                            <a href="/resultsmgmt" class="button"> Results Management</a>
-                            <% } %>
-                                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                                    userAccessLevel==="admin" ) { %>
-                                    <a href="/logout" class="button">Logout</a>
-                                    <% } %>
+          <a href="/dashboard" class="button">Dashboard</a>
+          <a href="/studentmgmt" class="button">Student Management</a>
+          <% } %>
+            <% if(userAccessLevel==="admin" ) { %>
+              <a href="/officermgmt" class="button"> Officer Management </a>
+              <a href="/coursemgmt" class="button"> Course Management</a>
+              <% } %>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
 
-                                        <button> ( logged in as <Strong>
-                                                <%= userAccessLevel %>
-                                            </Strong>) </button>
-    </header>
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
+      </header>
+
 
     <p>
         To add a Student record, please populate all required fields below
@@ -64,9 +62,9 @@
                 </div>
                 <div>
                     Course: <select name="studentCourseName" required>
-                        <% students.forEach ((student)=> {%>
-                            <option value="<%= student.courseID%>">
-                                <%= student.title%>
+                        <% courses.forEach ((course)=> {%>
+                            <option value="<%= course.id%>">
+                                <%= course.title%>
                             </option>
                             <%}); %>
                     </select>

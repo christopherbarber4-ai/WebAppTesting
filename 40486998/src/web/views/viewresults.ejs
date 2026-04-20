@@ -29,99 +29,102 @@
               <a href="/officermgmt" class="button"> Officer Management </a>
               <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-                  <a href="/resultsmgmt" class="button"> Results Management</a>
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                  userAccessLevel==="admin" ) { %>
+                  <a href="/logout" class="button">Logout</a>
                   <% } %>
-                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                      userAccessLevel==="admin" ) { %>
-                      <a href="/logout" class="button">Logout</a>
-                      <% } %>
 
-                        <button> ( logged in as <Strong>
-                            <%= userAccessLevel %>
-                          </Strong>) </button>
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
       </header>
 
-      <p>
-        Here you can either: <button> <a href="/resultadd/<%= student[0].id %>"> Add New Module Result </a> </button>
-      <form action="/addclassification" method="POST" class="style-Override">
-        <input type="hidden" name="studentId" value="<%= student[0].id %>">
-        <input type="submit" value="Auto-Calculate Classification" class="button">
-      </form>
+      <% if(userAccessLevel==="officer(edit)" ) { %>
+        <p>
+          Here you can: <button class="headerButton"> <a href="/resultadd/<%= student[0].id %>"> Add New Module Result
+            </a> </button>
+          <%}%>
 
+        </p>
+        <hr>
 
+        <p>
+          All Module results awarded to selected Student <b>(<%= student[0].firstName %>
+              <%= student[0].lastName %>) </b>:
+        </p>
+        <hr>
 
-      <% if (award.length> 0 && userAccessLevel === "officer(edit)") { %>
-        <a href="/editclassification/<%= student[0].id %>">
-          <button>Manually Override Classification</button>
-        </a>
-        <% } %>
+        <div class="container" id="resultsTable">
+          <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-12">
+              <div class="card fluid">
+                <table>
+                  <thead>
+                    <th> First Name</th>
+                    <th> Last Name</th>
+                    <th> Email</th>
+                    <th> Module Name</th>
+                    <th> Module ID</th>
+                    <th> Credit Value</th>
+                    <th> Score</th>
+                    <th> Resit?</th>
+                  </thead>
+                  <tbody>
 
-          </p>
-          <hr>
-
-          <p>
-            All Module results awarded to selected Student <b>(<%= student[0].firstName %> <%= student[0].lastName %>) </b>:
-          </p>
-          <hr>
-
-          <div class="container" id="resultsTable">
-            <div class="row">
-              <div class="col-sm-12 col-md-12 col-lg-12">
-                <div class="card fluid">
-                  <table>
-                    <thead>
-                      <th> First Name</th>
-                       <th> Last Name</th>
-                        <th> Email</th>
-                         <th> Module Name</th>
-                         <th> Module ID</th>
-                          <th> Credit Value</th>
-                          <th> Score</th>
-                          <th> Resit?</th>
-                      </thead>
-                    <tbody>
-
-                      <%totalResults.forEach((result)=>{ %>
-                        <tr>
-                          <td> <b>First name:</b>
-                            <%= result.firstName %> <br>
-                          </td>
-                          <td> <b>Second name:</b>
-                            <%= result.lastName %> <br>
-                          </td>
-                          <td> <b>Email:</b>
-                            <%= result.email %> <br>
-                          </td>
-                          <td> <b>Module Name:</b>
-                            <%= result.moduleName %> <br>
-                          </td>
-                          <td> <b>Module Id:</b>
-                            <%= result.moduleID %> <br>
-                          </td>
-                          <td> <b>Credit Value:</b>
-                            <%= result.creditValue %> <br>
-                          </td>
-                          <td> <b>Score:</b>
-                            <%= result.score %> <br>
-                          </td>
-                          <td> <b>Resit?:</b>
-                            <% if (result.resit===1){ %>
-                              Yes <% } else {%> No <% } %><br>
-                          </td>
-                        </tr>
-
-
-                </div>
+                    <%totalResults.forEach((result)=>{ %>
+                      <tr>
+                        <td> <b>First name:</b>
+                          <%= result.firstName %> <br>
+                        </td>
+                        <td> <b>Second name:</b>
+                          <%= result.lastName %> <br>
+                        </td>
+                        <td> <b>Email:</b>
+                          <%= result.email %> <br>
+                        </td>
+                        <td> <b>Module Name:</b>
+                          <%= result.moduleName %> <br>
+                        </td>
+                        <td> <b>Module Id:</b>
+                          <%= result.moduleID %> <br>
+                        </td>
+                        <td> <b>Credit Value:</b>
+                          <%= result.creditValue %> <br>
+                        </td>
+                        <td> <b>Score:</b>
+                          <%= result.score %> <br>
+                        </td>
+                        <td> <b>Resit?:</b>
+                          <% if (result.resit===1){ %>
+                            Yes <% } else {%> No <% } %><br>
+                        </td>
+                      </tr>
               </div>
-              <% }); %>
-                </tbody>
-                </table>
-
             </div>
+            <% }); %>
+              </tbody>
+              </table>
+
           </div>
+        </div>
+     
+        <p>
+          Course Classification Options for: <b>(<%= student[0].firstName %>
+              <%= student[0].lastName %>) </b>:
+        </p>
+        <% if(userAccessLevel==="officer(edit)" ) { %>
+          <form action="/addclassification" method="POST" class="style-Override">
+            <input type="hidden" name="studentId" value="<%= student[0].id %>">
+            <input type="submit" value="Auto-Calculate Classification" class="headerButton">
+          </form>
 
+          <%}%>
 
+            <% if (award.length> 0 && userAccessLevel === "officer(edit)") { %>
+              <a href="/editclassification/<%= student[0].id %>">
+                <button class="headerButton">Manually Override Classification</button>
+              </a>
+              <% } %>
 
 
 </body>

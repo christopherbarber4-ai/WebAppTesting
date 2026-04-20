@@ -52,6 +52,84 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 
+
+
+import fs from "fs";
+import { stringify } from "csv-stringify";
+import { promisify } from "util";
+
+const filename = "saved_from_db.csv";
+const writableStream = fs.createWriteStream(filename);
+
+const columns = [
+  "id",
+  "title"
+];
+
+const stringifier = stringify({ header: true, columns: columns });
+stringifier.pipe(writableStream);
+
+// Register event listeners BEFORE initiating writes to prevent missing events
+writableStream.on("finish", () => {
+  console.log("Finished writing data to CSV file");
+  db.close();
+});
+
+writableStream.on("error", (error) => {
+  console.error("Write stream error:", error.message);
+  db.close();
+});
+
+stringifier.on("error", (error) => {
+  console.error("Stringifier error:", error.message);
+  db.close();
+});
+
+// Use async/await pattern for better error handling and control flow
+async function exportToCSV() {
+  return new Promise((resolve, reject) => {
+    let rowCount = 0;
+
+    db.each(
+      `SELECT * FROM course`,
+      (error, row) => {
+        if (error) {
+          console.error("Database query error:", error.message);
+          return;
+        }
+        rowCount++;
+        // Write each row as it's retrieved, maintaining streaming behavior
+        if (!stringifier.write(row)) {
+          // Handle backpressure: pause database reads if stringifier is full
+          db.pause();
+          stringifier.once("drain", () => {
+            db.resume();
+          });
+        }
+      },
+      (error, count) => {
+        if (error) {
+          console.error("Database error:", error.message);
+          reject(error);
+          return;
+        }
+        console.log(`Processed ${count} rows`);
+        // End the stringifier after all rows are written
+        stringifier.end();
+        resolve(count);
+      }
+    );
+  });
+}
+
+exportToCSV().catch((error) => {
+  console.error("Export failed:", error.message);
+  db.close();
+  process.exit(1);
+});
+
+
+
 app.get("/", (req, res) => {
     res.render("login");
 })
@@ -241,7 +319,11 @@ app.get("/studentadd", checkAuth, async (req, res) => {
     LEFT JOIN award
     ON student.awardid = award.id `;
         const [students] = await db.promise().query(studentssql);
-        res.render("studentadd", { userAccessLevel, message, students });
+
+        const coursesql = `SELECT * FROM course`
+        const [courses] = await db.promise().query(coursesql);
+
+        res.render("studentadd", { userAccessLevel, message, students, courses });
 
     } else {
         res.redirect("/error");
@@ -394,6 +476,43 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
     }
 });
 
+app.get("/officeradd", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "admin") {
+        const message = req.session.message;
+        req.session.message = null;
+
+        const userSQL = `SELECT systemuser.id, systemuser.firstName, systemuser.lastName, 
+            systemuser.email, systemuser.role, course.title AS courseTitle
+            FROM systemuser
+            LEFT JOIN managedcourses ON systemuser.id = managedcourses.systemUserID
+            LEFT JOIN course ON managedcourses.courseID = course.id`;
+        const [results] = await db.promise().query(userSQL);
+
+        const users = [];
+        results.forEach((user) => {
+            if (!users[user.id]) {
+                users[user.id] = {
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    role: user.role,
+                    courses: []
+                };
+            }
+            if (user.courseTitle) users[user.id].courses.push(user.courseTitle);
+        });
+
+        const coursesql = `SELECT * FROM course`
+        const [courses] = await db.promise().query(coursesql);
+        res.render("officeradd", { courses, users, userAccessLevel, message });
+    }
+    else {
+        res.redirect("/error");
+    }
+});
+
 app.post("/addofficer", async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -438,6 +557,8 @@ VALUES (?, ?, ?, ?, ?)`
 
 app.get("/editofficer/:eid", checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
+            const message = req.session.message;
+        req.session.message = null;
 
     if (userAccessLevel === "admin") {
 
@@ -448,7 +569,7 @@ app.get("/editofficer/:eid", checkAuth, async (req, res) => {
         const coursesql = `SELECT * FROM course`
         const [courses] = await db.promise().query(coursesql);
 
-        res.render("officerupdate", { officer, courses, userAccessLevel });
+        res.render("officerupdate", { officer, courses, userAccessLevel, message });
     }
     else {
         res.redirect("/error");
@@ -582,7 +703,37 @@ app.get("/coursemgmt", checkAuth, async (req, res) => {
     }
 });
 
+app.get("/courseadd", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "admin") {
+        const message = req.session.message || null;
+        req.session.message = null;
+        const coursesql = `SELECT course.id, course.title, 
+            classificationrules.classificationYear2Weight, classificationrules.classificationYear3Weight, 
+            classificationrules.resitMax,
+            classificationrules.failBoundary,classificationrules.thirdLower, classificationrules.thirdUpper, classificationrules.twoTwoLower,
+            classificationrules.twoTwoUpper, classificationrules.twoOneLower, classificationrules.twoOneUpper, classificationrules.firstBoundary
+            FROM course
+            LEFT JOIN classificationrules ON course.id = classificationrules.courseID`;
+
+        try {
+            const [courses] = await db.promise().query(coursesql);
+            console.log(courses[0]);
+
+
+            res.render("courseadd", { courses, userAccessLevel, message });
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
+    }
+});
+
 app.post("/addcourse", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
         const addCourseForm = { ...req.body };
         const insertCourseSQL = `INSERT INTO course (title)
@@ -726,10 +877,10 @@ app.post("/addresult", checkAuth, async (req, res) => {
 
         const checkExistingScoreSQL = `SELECT * FROM results WHERE studentId = ? AND moduleID = ?`;
 
-        const [existingScore] = await db.promise().query(checkExistingScoreSQL, 
-            [addResultForm.studentId,addResultForm.studentModule])
+        const [existingScore] = await db.promise().query(checkExistingScoreSQL,
+            [addResultForm.studentId, addResultForm.studentModule])
 
-            //if there is an existing sore and the form is not being submitted as a resit then return to view results
+        //if there is an existing sore and the form is not being submitted as a resit then return to view results
 
         if (existingScore.length > 0 && addResultForm.isResit == 0) {
             req.session.message = `Error - A score already exists for this module. Score not added`
@@ -741,9 +892,9 @@ app.post("/addresult", checkAuth, async (req, res) => {
         try {
             if (addResultForm.isResit == 1) {
                 const deleteOldScoreSQL = `DELETE FROM results WHERE studentId = ? AND moduleID = ?`
-                const [deleteScore] = await db.promise().query(deleteOldScoreSQL, 
+                const [deleteScore] = await db.promise().query(deleteOldScoreSQL,
                     [addResultForm.studentId, addResultForm.studentModule
-                ]);
+                    ]);
                 console.log("deleted rows:", deleteScore.affectedRows);
 
                 const insertResitScoreSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
@@ -863,7 +1014,7 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
             if (results.length !== 17) { //17 modules including dissertation 6 modules y1,y2 and 5 y3.
                 req.session.message = `Error, Student must have 17 completed Module results before being able to 
             calculate the overall course classification. Current number of Module results awarded: ${results.length}.`
-                res.redirect(`/viewresults/${studentId}`);
+                return res.redirect(`/viewresults/${studentId}`);
             }
 
 
@@ -1001,8 +1152,6 @@ app.post("/addclassification/", checkAuth, async (req, res) => {
 
 
 });
-
-
 
 
 app.listen(PORT, () => {

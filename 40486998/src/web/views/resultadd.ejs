@@ -11,30 +11,28 @@
 
 <body>
 
-  <header>
+      <header>
 
-    <a href="/landing" class="logo">HEDClass</a>
-    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+        <a href="/landing" class="logo">HEDClass</a>
+        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
-      <a href="/dashboard" class="button">Dashboard</a>
-      <a href="/studentmgmt" class="button">Student Management</a>
-      <% } %>
-        <% if(userAccessLevel==="admin" ) { %>
-          <a href="/officermgmt" class="button"> Officer Management </a>
-          <a href="/coursemgmt" class="button"> Course Management</a>
+          <a href="/dashboard" class="button">Dashboard</a>
+          <a href="/studentmgmt" class="button">Student Management</a>
           <% } %>
-            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-              <a href="/resultsmgmt" class="button"> Results Management</a>
+            <% if(userAccessLevel==="admin" ) { %>
+              <a href="/officermgmt" class="button"> Officer Management </a>
+              <a href="/coursemgmt" class="button"> Course Management</a>
               <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                  userAccessLevel==="admin" ) { %>
-                  <a href="/logout" class="button">Logout</a>
-                  <% } %>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
 
-                    <button> ( logged in as <Strong>
-                        <%= userAccessLevel %>
-                      </Strong>) </button>
-  </header>
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
+      </header>
+
 
   <p>
     To add a Module Restult record, please populate all required fields below
@@ -84,19 +82,6 @@
 
       </form>
 
-      <form action="/addclassification" method="POST">
-        <div>
-          StudentId: <input type="text" name="studentId" readonly value="<%=student[0].id%>">
-        </div>
-        <div>
-          <button>Add Classification</button>
-        </div>
-      </form>
-      <form>
-        <% if (award.length> 0 && userAccessLevel === "officer(edit)") { %>
-          <button><a href="/editclassification/<%=student[0].id%>">Edit Classification</a> </button>
-          <% } %>
-      </form>
 
       <% } %>
 

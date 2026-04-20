@@ -28,26 +28,24 @@
                             <a href="/officermgmt" class="button"> Officer Management </a>
                             <a href="/coursemgmt" class="button"> Course Management</a>
                             <% } %>
-                                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-                                    <a href="/resultsmgmt" class="button"> Results Management</a>
+                                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                                    userAccessLevel==="admin" ) { %>
+                                    <a href="/logout" class="button">Logout</a>
                                     <% } %>
-                                        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                                            userAccessLevel==="admin" ) { %>
-                                            <a href="/logout" class="button">Logout</a>
-                                            <% } %>
 
-                                                <button> ( logged in as <Strong>
-                                                        <%= userAccessLevel %>
-                                                    </Strong>) </button>
+                                        <button> ( logged in as <Strong>
+                                                <%= userAccessLevel %>
+                                            </Strong>) </button>
             </header>
+
 
             <h3>Welcome to Officer Management</h3>
             <p>
-                Here you can either: <button> View/Edit </button> or <button>
-                    <a href="#studentForm"> Add new </a> </button>:
+            Here you can either: <button class="headerButton"> <a href="/officermgmt"> View Officers
+                </a></button> or <button class="headerButton"> <a href="/officeradd"> Add new Officer
+                </a> </button>
             </p>
             <hr>
-
             <div class="container" id="studentTable">
                 <div class="row">
                     <%users.forEach((user)=>{ %>
@@ -74,65 +72,18 @@
                                     <% user.courses.forEach((course)=> { %>
                                         <%= course %>,<br>
                                             <% }); %>
-                                             </div>
-                                                <div class="section double-padded">
-                                                    <button><a href="/editofficer/<%=user.id%>"> Edit </a></button>
-                                                    <button> <a href="/deleteofficer/<%=user.id%>"> Delete </a></button>
-                                                </div>
-                               
+                                </div>
+                                <div class="section double-padded">
+                                    <button><a href="/editofficer/<%=user.id%>"> Edit </a></button>
+                                    <button> <a href="/deleteofficer/<%=user.id%>"> Delete </a></button>
+                                </div>
+
                             </div>
                         </div>
                         <% }); %>
 
 
                 </div>
-            </div>
-
-
-            <p>To create a new officer, please fill out all fields...</p>
-
-            <div class="officerForm">
-                <form action="/addofficer" method="post">
-                    <div>
-                        First Name: <input name="officerFirstName" required>
-                    </div>
-                    <div>
-                        Last Name: <input name="officerLastName" required>
-                    </div>
-                    <div>
-                        Email: <input name="officerEmail" required>
-                    </div>
-                    <div>
-                        Role: <select name="officerRole" required>
-                            <option value="admin">Admin</option>
-                            <option value="officer(view)">Officer (View)
-                            </option>
-                            <option value="officer(edit)">Officer (Edit)
-                            </option>
-                        </select>
-                    </div>
-                    <div>
-                        Password: <input name="officerPassword" required>
-                    </div>
-                    <div>
-                        Course To Manage: <select name="officerCourseName" required>
-                            <% courses.forEach ((course)=> {%>
-                                <option value="<%= course.id%>">
-                                    <%= course.title%>
-                                </option>
-
-                                <%}); %>
-                        </select>
-                        Please choose one course initially and then 'Edit'
-                        the
-                        officer, if multiple
-                        courses need to be assigned
-                    </div>
-
-                    <div>
-                        <button>Add Officer</button>
-                    </div>
-                </form>
             </div>
 
 

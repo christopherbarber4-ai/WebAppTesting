@@ -88,8 +88,13 @@ body {
 button {
     border-radius: 15px;
 
-    
 
+}
+
+.headerButton{
+
+    border: thin solid black;
+     border-radius: 15px;
 }
 
 .style-Override{
