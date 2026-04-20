@@ -100,7 +100,7 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
             }
 
         });
-        console.log(studentStats)
+
 
         res.render("officer/dashboard", { studentStats: studentStats.filter(Boolean), userAccessLevel });
     } else {
@@ -116,11 +116,22 @@ editRouter.get("/viewresults/:eid", services.checkAuth, async (req, res) => {
         req.session.message = null;
 
         const studentId = req.params.eid;
+
+
+        const managedStudentCheckSQL = `SELECT student.id FROM student
+        INNER JOIN managedcourses ON student.courseID = managedcourses.courseID
+        WHERE student.id = ? AND managedcourses.systemUserID = ?`;
+        const [managedStudents] = await db.promise().query(managedStudentCheckSQL,
+            [studentId, req.session.authen]);
+        if (managedStudents.length === 0) {
+            return res.redirect("/error");
+        }
+
         const resultsSQL = `SELECT * FROM results
-    INNER JOIN student 
-    ON results.studentId = student.id
-    INNER JOIN modules 
-    ON results.moduleID = modules.id WHERE student.id = ?`;
+        INNER JOIN student 
+        ON results.studentId = student.id
+        INNER JOIN modules 
+        ON results.moduleID = modules.id WHERE student.id = ?`;
         const [totalResults] = await db.promise().query(resultsSQL, [studentId]);
 
 
@@ -133,9 +144,9 @@ editRouter.get("/viewresults/:eid", services.checkAuth, async (req, res) => {
         const [courses] = await db.promise().query(coursesql, [studentId]);
 
         const awardSQL = `SELECT * FROM student 
-    INNER JOIN award
-    ON student.awardID = award.id
-    WHERE student.id = ?`
+        INNER JOIN award
+        ON student.awardID = award.id
+        WHERE student.id = ?`
 
         const [award] = await db.promise().query(awardSQL, [studentId])
 
@@ -161,19 +172,24 @@ editRouter.get("/viewresults/:eid", services.checkAuth, async (req, res) => {
 
 
 editRouter.get("/studentmgmt", services.checkAuth, async (req, res) => {
+
     const userAccessLevel = req.session.userAccessLevel;
+
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
         const message = req.session.message;
         req.session.message = null;
-        const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, 
+        const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, student.courseID, graduationYear, 
         awardID, course.title, award.classification, award.manualOverrideReq, award.systemUserID FROM student
     INNER JOIN course 
     ON student.courseID = course.id
+    INNER JOIN managedcourses ON course.id = managedcourses.courseID
     LEFT JOIN award
-    ON student.awardid = award.id `;
-        const [students] = await db.promise().query(studentssql);
+    ON student.awardid = award.id
+    WHERE managedcourses.systemUserID= ? `;
+        const [students] = await db.promise().query(studentssql, [req.session.authen]);
+
         res.render("officer/studentmgmt", { students, userAccessLevel, message });
-        console.log(students[0]);
+
 
     } else {
         res.redirect("/error");
@@ -220,7 +236,7 @@ VALUES (?, ?, ?, ?, ?)`
 
         try {
             const [result] = await db.promise().query(insertStudentSQL, params)
-            console.log(result);
+
             req.session.message = `Student ${addStudentForm.studentFirstName} ${addStudentForm.studentLastName} successfully added`;
             res.redirect("/studentmgmt");
         } catch (error) {
@@ -239,6 +255,16 @@ editRouter.get("/editstudent/:eid", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(edit)") {
         const studentId = req.params.eid;
+
+        const managedStudentCheckSQL = `SELECT student.id FROM student
+        INNER JOIN managedcourses ON student.courseID = managedcourses.courseID
+        WHERE student.id = ? AND managedcourses.systemUserID = ?`;
+        const [managedStudents] = await db.promise().query(managedStudentCheckSQL,
+            [studentId, req.session.authen]);
+        if (managedStudents.length === 0) {
+            return res.redirect("/error");
+        }
+
         const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
         const [student] = await db.promise().query(singlestudentSQL, [studentId]);
         const coursesql = `SELECT * FROM course`
@@ -263,7 +289,7 @@ editRouter.post("/editstudent", services.checkAuth, async (req, res) => {
 
     try {
         const [result] = await db.promise().query(updateSQL, updateParams);
-        console.log(result);
+
         req.session.message = `Student ${updatestudentForm.studentFirstName} ${updatestudentForm.studentLastName} successfully updated`;
         res.redirect("/studentmgmt");
 
@@ -277,8 +303,18 @@ editRouter.post("/editstudent", services.checkAuth, async (req, res) => {
 
 editRouter.get("/deletestudent/:eid", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
+    const studentId = req.params.eid;
     if (userAccessLevel === "officer(edit)") {
-        const studentId = req.params.eid;
+
+        const managedStudentCheckSQL = `SELECT student.id FROM student
+        INNER JOIN managedcourses ON student.courseID = managedcourses.courseID
+        WHERE student.id = ? AND managedcourses.systemUserID = ?`;
+        const [managedStudents] = await db.promise().query(managedStudentCheckSQL,
+            [studentId, req.session.authen]);
+        if (managedStudents.length === 0) {
+            return res.redirect("/error");
+        }
+
         const singlestudentSQL = `SELECT * FROM student WHERE id = ?`
         const [student] = await db.promise().query(singlestudentSQL, [studentId]);
         const coursesql = `SELECT * FROM course`
@@ -322,6 +358,16 @@ editRouter.get("/resultadd/:eid", services.checkAuth, async (req, res) => {
         req.session.message = null;
 
         const studentId = req.params.eid;
+
+        const managedStudentCheckSQL = `SELECT student.id FROM student
+        INNER JOIN managedcourses ON student.courseID = managedcourses.courseID
+        WHERE student.id = ? AND managedcourses.systemUserID = ?`;
+        const [managedStudents] = await db.promise().query(managedStudentCheckSQL,
+            [studentId, req.session.authen]);
+        if (managedStudents.length === 0) {
+            return res.redirect("/error");
+        }
+
         const resultsSQL = `SELECT * FROM results
     INNER JOIN student 
     ON results.studentId = student.id
@@ -388,7 +434,7 @@ editRouter.post("/addresult", services.checkAuth, async (req, res) => {
                 const [deleteScore] = await db.promise().query(deleteOldScoreSQL,
                     [addResultForm.studentId, addResultForm.studentModule
                     ]);
-                console.log("deleted rows:", deleteScore.affectedRows);
+
 
                 const insertResitScoreSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
         VALUES (?,?,?,?,?)`;
@@ -413,7 +459,7 @@ editRouter.post("/addresult", services.checkAuth, async (req, res) => {
             }
             req.session.message = `Result for StudentID: ${addResultForm.studentId} for ModuleID:  ${addResultForm.studentModule} successfully added`;
             res.redirect(`/viewresults/${addResultForm.studentId}`);
-            console.log(req.body)
+
         } catch (error) {
             res.status(500).json(error);
             console.log(error);
@@ -495,14 +541,16 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
     INNER JOIN modules 
     ON results.moduleID = modules.id WHERE student.id = ?`;
 
-        const classificatonRulesSQL = `SELECT * FROM classificationRules`
+        const classificatonRulesSQL = `SELECT * FROM classificationRules
+        INNER JOIN student on classificationrules.courseID = student.courseID
+        WHERE student.id = ?`
 
 
 
         try {
 
             const [results] = await db.promise().query(resultsSQL, [studentId]);
-            console.log(results.length);
+
 
             if (results.length !== 17) { //17 modules including dissertation 6 modules y1,y2 and 5 y3.
                 req.session.message = `Error, Student must have 17 completed Module results before being able to 
@@ -554,7 +602,7 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
                 }
             });
 
-            const [rules] = await db.promise().query(classificatonRulesSQL);
+            const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
             const standardRules = rules[0];
 
 
@@ -596,8 +644,7 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
                 else {
                     classification[1] = "First Class Honours (1st)";
                 }
-                console.log(classification[1]);
-                console.log(classification[0]);
+
                 return classification;
             }
 
@@ -662,7 +709,7 @@ editRouter.get("/coursemgmt", services.checkAuth, async (req, res) => {
 
         try {
             const [courses] = await db.promise().query(coursesql);
-            console.log(courses[0]);
+
 
 
             res.render("officer/coursemgmt", { courses, userAccessLevel, message });
