@@ -11,97 +11,108 @@
 
 <body>
 
-    <% if (message !== 'undefined' && message) { %>
-  <span class="toast" id="successToast"><%= message %></span>
-<% } %>
+    <% if (message !=='undefined' && message) { %>
+        <span class="toast" id="successToast">
+            <%= message %>
+        </span>
+        <% } %>
 
-  <header>
+            <header>
 
-    <a href="/landing" class="logo">HEDClass</a>
-    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+                <a href="/landing" class="logo">HEDClass</a>
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
-      <a href="/dashboard" class="button">Dashboard</a>
-      <a href="/studentmgmt" class="button">Student Management</a>
-      <% } %>
-        <% if(userAccessLevel==="admin" ) { %>
-          <a href="/officermgmt" class="button"> Officer Management </a>
-          <a href="/coursemgmt" class="button"> Course Management</a>
-          <% } %>
-            <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
-              <a href="/resultsmgmt" class="button"> Results Management</a>
-              <% } %>
-                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
-                  userAccessLevel==="admin" ) { %>
-                  <a href="/logout" class="button">Logout</a>
-                  <% } %>
+                    <a href="/dashboard" class="button">Dashboard</a>
+                    <a href="/studentmgmt" class="button">Student Management</a>
+                    <% } %>
+                        <% if(userAccessLevel==="admin" ) { %>
+                            <a href="/officermgmt" class="button"> Officer Management </a>
+                            <a href="/coursemgmt" class="button"> Course Management</a>
+                            <% } %>
+                                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+                                    <a href="/resultsmgmt" class="button"> Results Management</a>
+                                    <% } %>
+                                        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                                            userAccessLevel==="admin" ) { %>
+                                            <a href="/logout" class="button">Logout</a>
+                                            <% } %>
 
-                    <button> ( logged in as <Strong>
-                        <%= userAccessLevel %>
-                      </Strong>) </button>
-  </header>
+                                                <button> ( logged in as <Strong>
+                                                        <%= userAccessLevel %>
+                                                    </Strong>) </button>
+            </header>
 
 
-    <h3>Welcome to Student Management</h3>
-    <p>
-        Here you can either: <button><a href="/studentmgmt"> </a> View/Edit </button> or <button> <a href="/studentadd"> Add new </a> </button>:
-    </p>
-    <hr>
+            <h3>Welcome to Student Management</h3>
+            <p>
+                Here you can either: <button><a href="/studentmgmt"> </a> View/Edit </button> or <button> <a
+                        href="/studentadd"> Add new </a> </button>:
+            </p>
+            <hr>
 
-    <div class="container" id="studentTable">
-        <div class="row">
-            <%students.forEach((student)=>{ %>
-                <div class="col-sm-12 col-md-6 col-lg-4">
-                    <div class="card fluid">
-                        <img src="/media/headshotplaceholder.jpg" class="section media" id="studentMedia" />
-                        <div class="section double-padded">
-                            <b> First Name:</b>
-                                <%= student.firstName %>
-                           
-                        </div>
-                        <div class="section double-padded">
-                           <b>Second Name:</b>
-                                <%= student.lastName %> <br>
-                          
-                        </div>
-                        <div class="section double-padded">
-                           <b> Email:</b>
-                                <%= student.email %><br>
-                           
-                        </div>
-                        <div class="section double-padded">
-                            <b> Course:</b>
-                                <%= student.courseID %><br>
-                         
-                        </div>
-                        <div class="section double-padded">
-                           <b>Course Title:</b>
-                                <%= student.title %>
-                         
-                        </div>
-                        <div class="section double-padded">
-                          <b>Award Information: </b>
-                                <%=student.classification%>
-                         
-                        </div>
-                        <div class="section double-padded">
-                            <td> <a href="/viewresults/<%=student.stuID%>"> View Results Information </a></td>
+            <div class="container" id="studentTable">
+                <div class="row">
+                    <%students.forEach((student)=>{ %>
+                        <div class="col-sm-12 col-md-6 col-lg-4">
+                            <div class="card fluid">
+                                <img src="/media/headshotplaceholder.jpg" class="section media" id="studentMedia" />
+                                <div class="section double-padded">
+                                    <b> First Name:</b>
+                                    <%= student.firstName %>
+
+                                </div>
+                                <div class="section double-padded">
+                                    <b>Second Name:</b>
+                                    <%= student.lastName %> <br>
+
+                                </div>
+                                <div class="section double-padded">
+                                    <b> Email:</b>
+                                    <%= student.email %><br>
+
+                                </div>
+                                <div class="section double-padded">
+                                    <b> Course ID:</b>
+                                    <%= student.courseID %><br>
+
+                                </div>
+                                <div class="section double-padded">
+                                    <b>Course Title:</b>
+                                    <%= student.title %>
+
+                                </div>
+                                <div class="section double-padded">
+                                    <b>Award Information: </b>
+                                    <%=student.classification%> <br>
+                                        <b> Manual Overidden Award?: </b>
+                                        <% if (student.manualOverrideReq) { %>
+                                            Yes
+                                            <% } else { %>
+                                                No
+                                                <% } %><br>
+                                    <b>Award made by Officer number: <%=student.systemUserID%> </b>
+
+                                </div>
+                                <div class="section double-padded">
+                                    <td> <a href="/viewresults/<%=student.stuID%>"> View Detailed Student Results
+                                            Information </a></td>
+                                </div>
+                                <div class="section double-padded">
+                                    <% if(userAccessLevel==="officer(edit)" ) { %>
+                                        <button> <a href="/editstudent/<%=student.stuID%>"> Edit Student</button> </a>
+
+                                        <button class> <a href="/deletestudent/<%=student.stuID%>"> Delete Student
+                                        </button></a>
+
+                                </div>
+                                <% } %>
                             </div>
-                            <div class="section double-padded">
-                            <% if(userAccessLevel==="officer(edit)" ) { %>
-                               <button> <a href="/editstudent/<%=student.stuID%>"> Edit</button> </a>
-                             
-                              <button class> <a href="/deletestudent/<%=student.stuID%>"> Delete
-                                    </button></a>
-                             
+
                         </div>
-                        <% } %>
-                    </div>
 
+                        <% }); %>
                 </div>
-
-                <% }); %>
-        </div>
-    </div>
+            </div>
 
 
 

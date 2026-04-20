@@ -213,13 +213,15 @@ app.get("/studentmgmt", checkAuth, async (req, res) => {
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
         const message = req.session.message;
         req.session.message = null;
-        const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, awardID, course.title, award.classification  FROM student
+        const studentssql = `SELECT student.id AS stuID, firstName, lastName, email, courseID, graduationYear, 
+        awardID, course.title, award.classification, award.manualOverrideReq, award.systemUserID FROM student
     INNER JOIN course 
     ON student.courseID = course.id
     LEFT JOIN award
     ON student.awardid = award.id `;
         const [students] = await db.promise().query(studentssql);
         res.render("studentmgmt", { students, userAccessLevel, message });
+        console.log(students[0]);
 
     } else {
         res.redirect("/error");
@@ -229,7 +231,7 @@ app.get("/studentmgmt", checkAuth, async (req, res) => {
 
 app.get("/studentadd", checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
-    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+    if (userAccessLevel === "officer(edit)") {
         const message = req.session.message;
         req.session.message = null;
 
@@ -249,24 +251,29 @@ app.get("/studentadd", checkAuth, async (req, res) => {
 
 app.post("/addstudent", checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
-    const addStudentForm = { ...req.body };
-    const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
+    if (userAccessLevel === "officer(edit)") {
+        const addStudentForm = { ...req.body };
+        const insertStudentSQL = `INSERT INTO student (firstName, lastName, email, courseID, graduationYear)
 VALUES (?, ?, ?, ?, ?)`
-    const params = [
-        addStudentForm.studentFirstName, addStudentForm.studentLastName,
-        addStudentForm.studentEmail,
-        addStudentForm.studentCourseName,
-        addStudentForm.graduationYear]
-        ;
+        const params = [
+            addStudentForm.studentFirstName, addStudentForm.studentLastName,
+            addStudentForm.studentEmail,
+            addStudentForm.studentCourseName,
+            addStudentForm.graduationYear]
+            ;
 
-    try {
-        const [result] = await db.promise().query(insertStudentSQL, params)
-        console.log(result);
-        req.session.message = `Student ${addStudentForm.studentFirstName} ${addStudentForm.studentLastName} successfully added`;
-        res.redirect("/studentmgmt");
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+        try {
+            const [result] = await db.promise().query(insertStudentSQL, params)
+            console.log(result);
+            req.session.message = `Student ${addStudentForm.studentFirstName} ${addStudentForm.studentLastName} successfully added`;
+            res.redirect("/studentmgmt");
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
     }
 
 });
@@ -328,17 +335,22 @@ app.get("/deletestudent/:eid", checkAuth, async (req, res) => {
 });
 
 app.post("/deletestudent/", checkAuth, async (req, res) => {
-    //const adminId <---- Need to add in authorisation;
-    const deleteStudentForm = { ...req.body };
-    const deleteSingleStudent = `DELETE FROM student WHERE student.id = ? `
-    const params = [deleteStudentForm.studentid];
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "officer(edit)") {
+        const deleteStudentForm = { ...req.body };
+        const deleteSingleStudent = `DELETE FROM student WHERE student.id = ? `
+        const params = [deleteStudentForm.studentid];
 
-    try {
-        const [student] = await db.promise().query(deleteSingleStudent, [params]);
+        try {
+            const [student] = await db.promise().query(deleteSingleStudent, [params]);
 
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
     }
     req.session.message = `Student ${deleteStudentForm.studentFirstName} ${deleteStudentForm.studentLastName} successfully deleted`;
     res.redirect("/studentmgmt");
@@ -383,38 +395,42 @@ app.get("/officermgmt", checkAuth, async (req, res) => {
 });
 
 app.post("/addofficer", async (req, res) => {
-
-
-    const addOfficerForm = { ...req.body };
-    const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "admin") {
+        const addOfficerForm = { ...req.body };
+        const insertOfficerSQL = `INSERT INTO systemuser (firstName, lastName, email, role, password)
 VALUES (?, ?, ?, ?, ?)`
 
-    const params = [
-        addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
-        addOfficerForm.officerEmail,
-        addOfficerForm.officerRole,
-        addOfficerForm.officerPassword,
+        const params = [
+            addOfficerForm.officerFirstName, addOfficerForm.officerLastName,
+            addOfficerForm.officerEmail,
+            addOfficerForm.officerRole,
+            addOfficerForm.officerPassword,
 
-    ];
-
-
-    console.log(req.body)
-    try {
-        const [insertOfficer] = await db.promise().query(insertOfficerSQL, params);
+        ];
 
 
-        const insertMngdCourseSQL = `INSERT INTO managedcourses (systemUserId, courseID) VALUES (?, ?)`
-        const insertedOfficer = [insertOfficer.insertId,
-        addOfficerForm.officerCourseName];
-
-        const [insertMngdCourse] = await db.promise().query(insertMngdCourseSQL, insertedOfficer);
+        console.log(req.body)
+        try {
+            const [insertOfficer] = await db.promise().query(insertOfficerSQL, params);
 
 
-        req.session.message = `Officer ${addOfficerForm.officerFirstName} ${addOfficerForm.officerLastName} successfully added`;
-        res.redirect("/officermgmt");
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+            const insertMngdCourseSQL = `INSERT INTO managedcourses (systemUserId, courseID) VALUES (?, ?)`
+            const insertedOfficer = [insertOfficer.insertId,
+            addOfficerForm.officerCourseName];
+
+            const [insertMngdCourse] = await db.promise().query(insertMngdCourseSQL, insertedOfficer);
+
+
+            req.session.message = `Officer ${addOfficerForm.officerFirstName} ${addOfficerForm.officerLastName} successfully added`;
+            res.redirect("/officermgmt");
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
     }
 
 });
@@ -442,45 +458,51 @@ app.get("/editofficer/:eid", checkAuth, async (req, res) => {
 
 
 app.post("/editofficer", checkAuth, async (req, res) => {
-
-
-    const updateOfficerForm = { ...req.body };
-    const updatOfficerSQL = `UPDATE systemuser SET firstName = ?, lastName = ?, 
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "admin") {
+        const updateOfficerForm = { ...req.body };
+        const updatOfficerSQL = `UPDATE systemuser SET firstName = ?, lastName = ?, 
     email = ?, role = ?, password = ?
     WHERE id = ?`;
-    const updateParams = [
-        updateOfficerForm.officerFirstName,
-        updateOfficerForm.officerLastName,
-        updateOfficerForm.officerEmail,
-        updateOfficerForm.officerRole,
-        updateOfficerForm.officerPassword,
-        updateOfficerForm.officerid];
+        const updateParams = [
+            updateOfficerForm.officerFirstName,
+            updateOfficerForm.officerLastName,
+            updateOfficerForm.officerEmail,
+            updateOfficerForm.officerRole,
+            updateOfficerForm.officerPassword,
+            updateOfficerForm.officerid];
 
-    const updateCoursesParams = [
-        updateOfficerForm.officerid,
-        updateOfficerForm.courseName,
-        updateOfficerForm.officerid];
+        const updateCoursesParams = [
+            updateOfficerForm.officerid,
+            updateOfficerForm.courseName,
+            updateOfficerForm.officerid];
 
-    try {
+        try {
 
-        const [result] = await db.promise().query(updatOfficerSQL, updateParams);
-        const deleteManagedCourses = `DELETE FROM managedcourses WHERE systemuserID = ? `
-        await db.promise().query(deleteManagedCourses, updateOfficerForm.officerid);
-        for (let courseid in updateOfficerForm.courseName) {
-            const updateMngdCourseSQL = `INSERT INTO managedcourses (systemUserID, courseID) VALUES (?,?)`
+            const [result] = await db.promise().query(updatOfficerSQL, updateParams);
+            const deleteManagedCourses = `DELETE FROM managedcourses WHERE systemuserID = ? `
+            await db.promise().query(deleteManagedCourses, updateOfficerForm.officerid);
+            for (let courseid in updateOfficerForm.courseName) {
+                const updateMngdCourseSQL = `INSERT INTO managedcourses (systemUserID, courseID) VALUES (?,?)`
 
-            await db.promise().query(updateMngdCourseSQL, [updateOfficerForm.officerid, updateOfficerForm.courseName[courseid], updateOfficerForm.officerid]);
+                await db.promise().query(updateMngdCourseSQL, [updateOfficerForm.officerid, updateOfficerForm.courseName[courseid], updateOfficerForm.officerid]);
+            }
+
+
+            req.session.message = `Officer ${updateOfficerForm.officerFirstName} ${updateOfficerForm.officerLastName} successfully updated`;
+            res.redirect("/officermgmt");
+
+
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
         }
-
-
-        req.session.message = `Officer ${updateOfficerForm.officerFirstName} ${updateOfficerForm.officerLastName} successfully updated`;
-        res.redirect("/officermgmt");
-
-
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
     }
+    else {
+        res.redirect("/error");
+
+    }
+
 
 
 });
@@ -502,23 +524,27 @@ app.get("/deleteofficer/:eid", checkAuth, async (req, res) => {
 })
 
 app.post("/deleteofficer/", checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "admin") {
+        const deleteOfficerForm = { ...req.body };
+        const deleteSingleOfficer = `DELETE FROM systemuser WHERE systemuser.id = ? `
+        const params = [deleteOfficerForm.officerid];
 
-    //const adminId <---- Need to add in authorisation;
-    const deleteOfficerForm = { ...req.body };
-    const deleteSingleOfficer = `DELETE FROM systemuser WHERE systemuser.id = ? `
-    const params = [deleteOfficerForm.officerid];
-
-    const updateLegacyNameSQL = `UPDATE award SET legacyApprover = (SELECT CONCAT(firstName, ' ', lastName) 
+        const updateLegacyNameSQL = `UPDATE award SET legacyApprover = (SELECT CONCAT(firstName, ' ', lastName) 
     FROM systemuser WHERE id = ?), systemUserID = NULL WHERE award.systemUserID = ?`
-    const updateParams = [deleteOfficerForm.officerid, deleteOfficerForm.officerid];
+        const updateParams = [deleteOfficerForm.officerid, deleteOfficerForm.officerid];
 
-    try {
-        const [legacyName] = await db.promise().query(updateLegacyNameSQL, updateParams);
-        const [officer] = await db.promise().query(deleteSingleOfficer, [params]);
+        try {
+            const [legacyName] = await db.promise().query(updateLegacyNameSQL, updateParams);
+            const [officer] = await db.promise().query(deleteSingleOfficer, [params]);
 
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
     }
 
     req.session.message = `Officer ${deleteOfficerForm.officerFirstName} ${deleteOfficerForm.officerLastName} successfully added`;
@@ -557,31 +583,35 @@ app.get("/coursemgmt", checkAuth, async (req, res) => {
 });
 
 app.post("/addcourse", checkAuth, async (req, res) => {
-
-    const addCourseForm = { ...req.body };
-    const insertCourseSQL = `INSERT INTO course (title)
+    if (userAccessLevel === "admin") {
+        const addCourseForm = { ...req.body };
+        const insertCourseSQL = `INSERT INTO course (title)
 VALUES (?)`
-    const params = [
-        addCourseForm.courseTitle];
+        const params = [
+            addCourseForm.courseTitle];
 
-    try {
-        const [result] = await db.promise().query(insertCourseSQL, params)
+        try {
+            const [result] = await db.promise().query(insertCourseSQL, params)
 
-        const insertedCourse = [result.insertId];
+            const insertedCourse = [result.insertId];
 
-        const insertRulesSQL = `INSERT INTO classificationrules 
+            const insertRulesSQL = `INSERT INTO classificationrules 
             (classificationYear2Weight, classificationYear3Weight,resitMax,failBoundary,thirdLower,thirdUpper,twoTwoLower, twoTwoUpper,twoOneLower,twoOneUpper,firstBoundary, courseID) 
             VALUES (0.30,0.70,40,39.99,40,49.99,50,59.99,60,69.99,70, ?)`;
-        await db.promise().query(insertRulesSQL, [insertedCourse]);
+            await db.promise().query(insertRulesSQL, [insertedCourse]);
 
 
 
 
-        req.session.message = `Course ${addCourseForm.courseTitle} successfully added`;
-        res.redirect("/coursemgmt");
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+            req.session.message = `Course ${addCourseForm.courseTitle} successfully added`;
+            res.redirect("/coursemgmt");
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
     }
 
 });
@@ -642,7 +672,7 @@ app.get("/viewresults/:eid", checkAuth, async (req, res) => {
 
 app.get("/resultadd/:eid", checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
-    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+    if (userAccessLevel === "officer(edit)") {
 
         const message = req.session.message;
         req.session.message = null;
@@ -677,7 +707,7 @@ app.get("/resultadd/:eid", checkAuth, async (req, res) => {
     FROM student WHERE student.id = ?`;
         const [student] = await db.promise().query(studentSQL, [studentId]);
 
-      
+
         res.render("resultadd", { totalResults, courses, award, student, userAccessLevel, message });
 
     }
@@ -691,26 +721,55 @@ app.get("/resultadd/:eid", checkAuth, async (req, res) => {
 
 app.post("/addresult", checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
-    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+    if (userAccessLevel === "officer(edit)") {
         const addResultForm = { ...req.body };
-        const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
-    VALUES (?,?,?,?,?)`;
-        const params =
-            [addResultForm.studentId,
-            addResultForm.courseId,
-            addResultForm.studentModule,
-            addResultForm.moduleScore,
-            addResultForm.isResit
-            ];
 
+        const checkExistingScoreSQL = `SELECT * FROM results WHERE studentId = ? AND moduleID = ?`;
+
+        const [existingScore] = await db.promise().query(checkExistingScoreSQL, 
+            [addResultForm.studentId,addResultForm.studentModule])
+
+            //if there is an existing sore and the form is not being submitted as a resit then return to view results
+
+        if (existingScore.length > 0 && addResultForm.isResit == 0) {
+            req.session.message = `Error - A score already exists for this module. Score not added`
+            res.redirect(`/viewresults/${addResultForm.studentId}`);
+            return;
+        }
+
+        //if a resit and adding a score then delete the old one first.
         try {
-            const [result] = await db.promise().query(insertResultSQL, params)
-            console.log(result);
-            console.log(req.body)
-            console.log(result)
+            if (addResultForm.isResit == 1) {
+                const deleteOldScoreSQL = `DELETE FROM results WHERE studentId = ? AND moduleID = ?`
+                const [deleteScore] = await db.promise().query(deleteOldScoreSQL, 
+                    [addResultForm.studentId, addResultForm.studentModule
+                ]);
+                console.log("deleted rows:", deleteScore.affectedRows);
 
+                const insertResitScoreSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
+        VALUES (?,?,?,?,?)`;
+                const insertedResitScore = await db.promise().query(insertResitScoreSQL, [
+                    addResultForm.studentId,
+                    addResultForm.courseId,
+                    addResultForm.studentModule,
+                    addResultForm.moduleScore,
+                    addResultForm.isResit
+                ]);
+            } else { //standard insert for new module score and non resit
+                const insertResultSQL = `INSERT INTO results (studentId, courseId, moduleID, score, resit) 
+    VALUES (?,?,?,?,?)`;
+                const params =
+                    [addResultForm.studentId,
+                    addResultForm.courseId,
+                    addResultForm.studentModule,
+                    addResultForm.moduleScore,
+                    addResultForm.isResit
+                    ];
+                const [result] = await db.promise().query(insertResultSQL, params)
+            }
             req.session.message = `Result for StudentID: ${addResultForm.studentId} for ModuleID:  ${addResultForm.studentModule} successfully added`;
             res.redirect(`/viewresults/${addResultForm.studentId}`);
+            console.log(req.body)
         } catch (error) {
             res.status(500).json(error);
             console.log(error);
@@ -779,151 +838,163 @@ app.post("/editclassification", checkAuth, async (req, res) => {
 
 
 app.post("/addclassification/", checkAuth, async (req, res) => {
+    const message = req.session.message;
+    req.session.message = null;
     const userAccessLevel = req.session.userAccessLevel;
-    let studentClassification;
-    const classificationForm = { ...req.body };
-    const studentId = [classificationForm.studentId];
-    const resultsSQL = `SELECT * FROM results
+    if (userAccessLevel === "officer(edit)") {
+        let studentClassification;
+        const classificationForm = { ...req.body };
+        const studentId = [classificationForm.studentId];
+        const resultsSQL = `SELECT * FROM results
     INNER JOIN student 
     ON results.studentId = student.id
     INNER JOIN modules 
     ON results.moduleID = modules.id WHERE student.id = ?`;
 
-    const classificatonRulesSQL = `SELECT * FROM classificationRules`
+        const classificatonRulesSQL = `SELECT * FROM classificationRules`
 
 
 
-    try {
+        try {
 
-        const [results] = await db.promise().query(resultsSQL, [studentId]);
+            const [results] = await db.promise().query(resultsSQL, [studentId]);
+            console.log(results.length);
 
-        if (results.length === 0) {
-            return res.send(`<h2>Cannot classify - student has no results entered.</h2>
-        <a href="/studentmgmt">Back</a>`);
-        }
-
-        //STEP 1 - ensure where resits, the resit result is taken forwards.
-        // cycles through original results and if module ID 
-        // doesnt exist or where resit is true then add to new array
-        const cleanedResults = [];
-        results.forEach((result) => {
-            if (!cleanedResults[result.moduleID] || result.resit === 1) {
-                cleanedResults[result.moduleID] = result;
+            if (results.length !== 17) { //17 modules including dissertation 6 modules y1,y2 and 5 y3.
+                req.session.message = `Error, Student must have 17 completed Module results before being able to 
+            calculate the overall course classification. Current number of Module results awarded: ${results.length}.`
+                res.redirect(`/viewresults/${studentId}`);
             }
-        });
 
 
-        //STEP 2 - calculate the final scores for each year and total
-        let yearOneResults = 0;
-        let yearTwoResults = 0;
-        let yearThreeResults = 0;
-        let yearOneFail = false;
-
-        cleanedResults.forEach((result) => {
-            if (result.resit === 1 && result.score > 40) {
-                result.score = RESIT_MAX;
-            } else {
-                result.score = result.score;
-            }
-            switch (result.year) {
-                case "Y1":
-                    if (result.score < 40) {
-                        yearOneFail = true;
-                    } else {
-                        yearOneResults += (parseFloat(result.score) * result.creditValue);
-                    }
-                    break;
-                case "Y2":
-                    yearTwoResults += (parseFloat(result.score) * result.creditValue);
-                    break;
-                case "Y3":
-                    yearThreeResults += (parseFloat(result.score) * result.creditValue);
-                    break;
-
-            }
-        });
-
-        const [rules] = await db.promise().query(classificatonRulesSQL);
-        const standardRules = rules[0];
 
 
-        let classificationYear2Weight = standardRules.classificationYear2Weight;
-        let classificationYear3Weight = standardRules.classificationYear3Weight;
-        let classificationFail = standardRules.failBoundary;
-        let classificationThirdLower = standardRules.thirdLower;
-        let classificationThirdHigher = standardRules.thirdUpper;
-        let classificationTwoTwoLower = standardRules.twoTwoLower;
-        let classificationTwoTwoHigher = standardRules.twoTwoUpper;
-        let classificationTwoOneLower = standardRules.twoOneLower;
-        let classificationTwoOneHigher = standardRules.twoOneUpper;
-        let classificationFirst = standardRules.firstBoundary;
+            //STEP 1 - ensure where resits, the resit result is taken forwards.
+            // cycles through original results and if module ID 
+            // doesnt exist or where resit is true then add to new array
+            const cleanedResults = [];
+            results.forEach((result) => {
+                if (!cleanedResults[result.moduleID] || result.resit === 1) {
+                    cleanedResults[result.moduleID] = result;
+                }
+            });
 
-        //STEP 3 - Confirm classification based on final score, populate an array with both score and classificaiton
-        function calcFinalClassification(y1isFail, y2, y3, TOTAL_CREDS) {
 
-            let classification = [0,];
+            //STEP 2 - calculate the final scores for each year and total
+            let yearOneResults = 0;
+            let yearTwoResults = 0;
+            let yearThreeResults = 0;
+            let yearOneFail = false;
 
-            if (!y1isFail) {
-                classification[0] += (y2 / TOTAL_CREDS * classificationYear2Weight) + (y3 / TOTAL_CREDS * classificationYear3Weight);
-            } else {
-                classification[1] = "Fail";
+            cleanedResults.forEach((result) => {
+                if (result.resit === 1 && result.score > 40) {
+                    result.score = RESIT_MAX;
+                } else {
+                    result.score = result.score;
+                }
+                switch (result.year) {
+                    case "Y1":
+                        if (result.score < 40) {
+                            yearOneFail = true;
+                        } else {
+                            yearOneResults += (parseFloat(result.score) * result.creditValue);
+                        }
+                        break;
+                    case "Y2":
+                        yearTwoResults += (parseFloat(result.score) * result.creditValue);
+                        break;
+                    case "Y3":
+                        yearThreeResults += (parseFloat(result.score) * result.creditValue);
+                        break;
+
+                }
+            });
+
+            const [rules] = await db.promise().query(classificatonRulesSQL);
+            const standardRules = rules[0];
+
+
+            let classificationYear2Weight = standardRules.classificationYear2Weight;
+            let classificationYear3Weight = standardRules.classificationYear3Weight;
+            let classificationFail = standardRules.failBoundary;
+            let classificationThirdLower = standardRules.thirdLower;
+            let classificationThirdHigher = standardRules.thirdUpper;
+            let classificationTwoTwoLower = standardRules.twoTwoLower;
+            let classificationTwoTwoHigher = standardRules.twoTwoUpper;
+            let classificationTwoOneLower = standardRules.twoOneLower;
+            let classificationTwoOneHigher = standardRules.twoOneUpper;
+            let classificationFirst = standardRules.firstBoundary;
+
+            //STEP 3 - Confirm classification based on final score, populate an array with both score and classificaiton
+            function calcFinalClassification(y1isFail, y2, y3, TOTAL_CREDS) {
+
+                let classification = [0,];
+
+                if (!y1isFail) {
+                    classification[0] += (y2 / TOTAL_CREDS * classificationYear2Weight) + (y3 / TOTAL_CREDS * classificationYear3Weight);
+                } else {
+                    classification[1] = "Fail";
+                    return classification;
+                }
+
+                if (classification[0] <= classificationFail) {
+                    classification[1] = "Fail";
+                }
+                else if (classification[0] >= classificationThirdLower && classification[0] <= classificationThirdHigher) {
+                    classification[1] = "Third Class Honours";
+                }
+                else if (classification[0] >= classificationTwoTwoLower && classification[0] <= classificationTwoTwoHigher) {
+                    classification[1] = "Lower Second Class (2:2)";
+                }
+                else if (classification[0] >= classificationTwoOneLower && classification[0] <= classificationTwoOneHigher) {
+                    classification[1] = "Upper Second Class (2:1)";
+                }
+                else {
+                    classification[1] = "First Class Honours (1st)";
+                }
+                console.log(classification[1]);
+                console.log(classification[0]);
                 return classification;
             }
 
-            if (classification[0] <= classificationFail) {
-                classification[1] = "Fail";
-            }
-            else if (classification[0] >= classificationThirdLower && classification[0] <= classificationThirdHigher) {
-                classification[1] = "Third Class Honours";
-            }
-            else if (classification[0] >= classificationTwoTwoLower && classification[0] <= classificationTwoTwoHigher) {
-                classification[1] = "Lower Second Class (2:2)";
-            }
-            else if (classification[0] >= classificationTwoOneLower && classification[0] <= classificationTwoOneHigher) {
-                classification[1] = "Upper Second Class (2:1)";
-            }
-            else {
-                classification[1] = "First Class Honours (1st)";
-            }
-            console.log(classification[1]);
-            console.log(classification[0]);
-            return classification;
+            console.log(studentClassification = calcFinalClassification(yearOneFail, yearTwoResults, yearThreeResults, TOTAL_CREDS));
+
+
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
         }
 
-        console.log(studentClassification = calcFinalClassification(yearOneFail, yearTwoResults, yearThreeResults, TOTAL_CREDS));
+        const insertClassificationSQL = `INSERT INTO award (finalScore, classification, classificationStatus, systemUserID) VALUES(?, ?, ?, ?)`
+        const insertParams = [
+            studentClassification[0],
+            studentClassification[1],
+            "In Progress",
+            2,
+        ];
+
+        try {
+            const [classificationresult] = await db.promise().query(insertClassificationSQL, insertParams)
+
+            const updateStudentSQL = `UPDATE student SET awardID = ? WHERE id = ?`;
+
+            const updateStudentParams = [classificationresult.insertId,
+            classificationForm.studentId];
+
+            const [updatestudentaward] = await db.promise().query(updateStudentSQL, updateStudentParams);
 
 
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+            req.session.message = `Classification for Student ${classificationForm.studentId} succesfully added`;
+            res.redirect(`viewresults/${classificationForm.studentId}`);
+
+
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
     }
-
-    const insertClassificationSQL = `INSERT INTO award (finalScore, classification, classificationStatus, systemUserID) VALUES(?, ?, ?, ?)`
-    const insertParams = [
-        studentClassification[0],
-        studentClassification[1],
-        "In Progress",
-        2,
-    ];
-
-    try {
-        const [classificationresult] = await db.promise().query(insertClassificationSQL, insertParams)
-
-        const updateStudentSQL = `UPDATE student SET awardID = ? WHERE id = ?`;
-
-        const updateStudentParams = [classificationresult.insertId,
-        classificationForm.studentId];
-
-        const [updatestudentaward] = await db.promise().query(updateStudentSQL, updateStudentParams);
-
-
-        req.session.message = `Classification for Student ${classificationForm.studentId} succesfully added`;
-        res.redirect(`viewresults/${classificationForm.studentId}`);
-
-
-    } catch (error) {
-        res.status(500).json(error);
-        console.log(error);
+    else {
+        res.redirect("/error");
     }
 
 

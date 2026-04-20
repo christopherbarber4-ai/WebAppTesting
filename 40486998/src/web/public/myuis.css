@@ -79,7 +79,7 @@ body {
     object-fit: fill;
     border-radius: 25px;
     height: 125px;
-    width: 125px;
+    width: 125px;npx
     border: solid thin white;
 }
 
@@ -92,9 +92,14 @@ button {
 
 }
 
-#classificationButton{
-    color: red;
+.style-Override{
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline !important;
 }
+
 /*
 
 .officerForm{
