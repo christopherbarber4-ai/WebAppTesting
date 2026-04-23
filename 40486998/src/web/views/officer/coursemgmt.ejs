@@ -94,7 +94,8 @@
                     </div>
                     <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
                       <div class="section double-padded">
-                        <button> <a href="/editcourserules/<%= course.id %>">Edit</a></button>
+                        <button> <a href="/editcourse/<%= course.id %>">Edit</a></button>
+                        
                       </div>
                       <%}%>
                   </div>
@@ -104,22 +105,6 @@
             </div>
           </div>
 
-          <p>To create a new course please fill out all fields... Please note all courses will be loaded
-            initially
-            with the
-            University's standard classification rules</p>
-
-          <div class="courseForm">
-            <form action="/addcourse" method="post">
-              <div>
-                Course Title: <input name="courseTitle" required>
-              </div>
-
-              <div>
-                <button>Add Course</button>
-              </div>
-            </form>
-          </div>
 
 </body>
 

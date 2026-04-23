@@ -724,20 +724,21 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
                 }
             });
 
-            const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
-            const standardRules = rules[0];
+const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
 
 
-            let classificationYear2Weight = standardRules.classificationYear2Weight;
-            let classificationYear3Weight = standardRules.classificationYear3Weight;
-            let classificationFail = standardRules.failBoundary;
-            let classificationThirdLower = standardRules.thirdLower;
-            let classificationThirdHigher = standardRules.thirdUpper;
-            let classificationTwoTwoLower = standardRules.twoTwoLower;
-            let classificationTwoTwoHigher = standardRules.twoTwoUpper;
-            let classificationTwoOneLower = standardRules.twoOneLower;
-            let classificationTwoOneHigher = standardRules.twoOneUpper;
-            let classificationFirst = standardRules.firstBoundary;
+
+
+            let classificationYear2Weight = rules[0].classificationYear2Weight;
+            let classificationYear3Weight = rules[0].classificationYear3Weight;
+            let classificationFail = rules[0].failBoundary;
+            let classificationThirdLower = rules[0].thirdLower;
+            let classificationThirdHigher = rules[0].thirdUpper;
+            let classificationTwoTwoLower = rules[0].twoTwoLower;
+            let classificationTwoTwoHigher = rules[0].twoTwoUpper;
+            let classificationTwoOneLower = rules[0].twoOneLower;
+            let classificationTwoOneHigher = rules[0].twoOneUpper;
+            let classificationFirst = rules[0].firstBoundary;
 
             //STEP 3 - Confirm classification based on final score, populate an array with both score and classificaiton
             function calcFinalClassification(y1isFail, y2, y3, TOTAL_CREDS) {
@@ -763,7 +764,7 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
                 else if (classification[0] >= classificationTwoOneLower && classification[0] <= classificationTwoOneHigher) {
                     classification[1] = "Upper Second Class (2:1)";
                 }
-                else {
+                else if (classification[0] >= classificationFirst) {
                     classification[1] = "First Class Honours (1st)";
                 }
 
@@ -846,5 +847,80 @@ editRouter.get("/coursemgmt", services.checkAuth, async (req, res) => {
 });
 
 
+editRouter.get("/editcourse/:eid", services.checkAuth, async (req, res) => {
+
+
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "admin" || userAccessLevel === "officer(edit)") {
+        const message = req.session.message || null;
+        req.session.message = null;
+
+        const courseId = req.params.eid;
+        const coursesql = `SELECT course.id, course.title, 
+            classificationrules.classificationYear2Weight, classificationrules.classificationYear3Weight, 
+            classificationrules.resitMax,
+            classificationrules.failBoundary,classificationrules.thirdLower, classificationrules.thirdUpper, classificationrules.twoTwoLower,
+            classificationrules.twoTwoUpper, classificationrules.twoOneLower, classificationrules.twoOneUpper, classificationrules.firstBoundary
+            FROM course
+            LEFT JOIN classificationrules ON course.id = classificationrules.courseID
+            WHERE course.id = ?`;
+
+        try {
+            const [courses] = await db.promise().query(coursesql, [courseId]);
+
+
+
+            res.render("officer/courseedit", { courses, userAccessLevel, message });
+
+        } catch (error) {
+            res.status(500).json(error);
+            console.log(error);
+        }
+    }
+    else {
+        res.redirect("/error");
+    }
+
+});
+
+editRouter.post("/editcourse", services.checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    const editCourseForm = { ...req.body };
+const updateSQL = `UPDATE classificationrules SET 
+    classificationYear2Weight = ?, classificationYear3Weight = ?, resitMax = ?, failBoundary = ?, thirdLower = ?, thirdUpper = ?, twoTwoLower = ?, twoTwoUpper = ?, twoOneLower = ?,  twoOneUpper = ?, firstBoundary = ?
+    WHERE courseID = ?`;
+    const updateParams = [
+    editCourseForm.year2Weight,
+    editCourseForm.year3Weight,
+    editCourseForm.resitMax,
+    editCourseForm.failBoundary,
+    editCourseForm.thirdLower,
+    editCourseForm.thirdUpper,
+    editCourseForm.twoTwoLower,
+    editCourseForm.twoTwoUpper,
+    editCourseForm.twoOneLower,
+    editCourseForm.twoOneUpper,
+    editCourseForm.firstBoundary,
+    editCourseForm.courseId
+]
+
+    try {
+        const [result] = await db.promise().query(updateSQL, updateParams);
+        console.log(result);
+
+        req.session.message = `Course ${editCourseForm.courseTitle} successfully updated`;
+        res.redirect("/coursemgmt");
+
+    } catch (error) {
+        res.status(500).json(error);
+        console.log(error);
+    }
+
+
+});
+
+
+
+    
 
 export default editRouter;

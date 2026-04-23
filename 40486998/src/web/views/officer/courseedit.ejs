@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="/myuis.css">
+  <title>Course Management</title>
+</head>
+
+<body>
+
+  <% if (message !=='undefined' && message) { %>
+    <span class="toast" id="successToast">
+      <%= message %>
+    </span>
+    <% } %>
+
+      <header>
+
+        <a href="/landing" class="logo">HEdClass</a>
+        <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+
+          <a href="/dashboard" class="button">Dashboard</a>
+          <a href="/studentmgmt" class="button">Student Management</a>
+          <% } %>
+            <% if(userAccessLevel==="admin" ) { %>
+              <a href="/officermgmt" class="button"> Officer Management </a>
+              <% } %>
+                <% if(userAccessLevel==="officer(edit)" || userAccessLevel==="admin" ) { %>
+                  <a href="/coursemgmt" class="button"> Course Management</a>
+                  <%}%>
+                    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                      userAccessLevel==="admin" ) { %>
+                      <a href="/logout" class="button">Logout</a>
+                      <% } %>
+
+                        <button> ( logged in as <Strong>
+                            <%= userAccessLevel %>
+                          </Strong>) </button>
+      </header>
+
+
+      <h3>Welcome to Course Management</h3>
+      <% if(userAccessLevel==="admin" ) { %>
+
+        <p>
+          Here you can either: <button class="headerButton"> <a href="/coursemgmt"> View Courses
+            </a></button> or <button class="headerButton"> <a href="/courseadd"> Add new Course
+            </a> </button>
+        </p>
+        <hr>
+        <%}%>
+
+          <p>
+            The Course's current classification variables are displayed below, to update these, please edit the required
+            fields below.
+          </p>
+          <form action="/editcourse" method="POST">
+
+            <div>
+              Course id: <input type="text" name="courseId" readonly value="<%=courses[0].id %>">
+
+            </div>
+
+            <div>
+              Course title: <input type="text" name="courseTitle" readonly value="<%= courses[0].title %>">
+            </div>
+            <div>
+              y2 Weight: <input type="text" name="year2Weight" value="<%= courses[0].classificationYear2Weight %>">
+
+              <div>
+
+                y3 Weight <input type="text" name="year3Weight" value=" <%= courses[0].classificationYear3Weight %>">
+              </div>
+              <div>
+                Max resit score <input type="text" name="resitMax" value="<%= courses[0].resitMax %>">
+              </div>
+              <div>
+                Fail Threshold <input type="text" name="failBoundary" value=" <%= courses[0].failBoundary %>">
+              </div>
+                            <div>
+                Third Lower Boundary <input type="text" name="thirdLower" value=" <%= courses[0].thirdLower %>">
+                Third Upper Boundary <input type="text" name="thirdUpper" value=" <%= courses[0].thirdUpper %>">
+              </div>
+              <div>
+                2:2 Lower Boundary <input type="text" name="twoTwoLower" value=" <%= courses[0].twoTwoLower %>">
+                2:2 Upper Boundary <input type="text" name="twoTwoUpper" value=" <%= courses[0].twoTwoUpper %>">
+              </div>
+              <div>
+                2:1 Lower Boundary <input type="text" name="twoOneLower" value=" <%= courses[0].twoOneLower %>">
+                2:1 Upper Boundary <input type="text" name="twoOneUpper" value=" <%= courses[0].twoOneUpper %>">
+              </div>
+              <div>
+                1st Lower Boundary <input type="text" name="firstBoundary" value=" <%= courses[0].firstBoundary %>">
+
+              </div>
+
+
+              </p>
+              <input type="submit" value="update">
+          </form>
+
+
+</body>
+
+</html>
