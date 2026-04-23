@@ -458,7 +458,7 @@ editRouter.post("/addresult", services.checkAuth, async (req, res) => {
                 const [result] = await db.promise().query(insertResultSQL, params)
             }
             req.session.message = `Result for StudentID: ${addResultForm.studentId} for ModuleID:  ${addResultForm.studentModule} successfully added`;
-            res.redirect(`/viewresults/${addResultForm.studentId}`);
+            res.redirect(`/resultadd/${addResultForm.studentId}`);
 
         } catch (error) {
             res.status(500).json(error);

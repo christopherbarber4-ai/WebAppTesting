@@ -13,7 +13,7 @@
 
       <header>
 
-        <a href="/landing" class="logo">HEDClass</a>
+        <a href="/landing" class="logo">HEdClass</a>
         <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
 
           <a href="/dashboard" class="button">Dashboard</a>
@@ -86,6 +86,14 @@
 
 
       <% } %>
+
+  Modules that the student already has a result for: <br>
+<% totalResults.forEach((result) => { %>
+    <% if (result.score != null) { %>
+        <%=result.moduleName%> <br>
+    <% } %>
+<% }); %>
+ 
 
 
 </body>
