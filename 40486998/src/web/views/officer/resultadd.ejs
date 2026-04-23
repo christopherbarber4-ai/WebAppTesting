@@ -82,17 +82,25 @@
           <button>Add Result</button>
         </div>
 
+        
+
       </form>
 
 
       <% } %>
 
-  Modules that the student already has a result for: <br>
+      </div>
+
+      <div class ="container"> 
+        <strong> To help with populating results. Please see below list of Modules that the Student already has a result for: </strong>  <br>
 <% totalResults.forEach((result) => { %>
     <% if (result.score != null) { %>
         <%=result.moduleName%> <br>
     <% } %>
 <% }); %>
+</div>
+
+
  
 
 
