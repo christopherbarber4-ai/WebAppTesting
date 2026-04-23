@@ -238,34 +238,6 @@ adminRouter.post("/deleteofficer/", services.checkAuth, async (req, res) => {
 
 
 
-adminRouter.get("/coursemgmt", services.checkAuth, async (req, res) => {
-    const userAccessLevel = req.session.userAccessLevel;
-    if (userAccessLevel === "admin") {
-        const message = req.session.message || null;
-        req.session.message = null;
-        const coursesql = `SELECT course.id, course.title, 
-            classificationrules.classificationYear2Weight, classificationrules.classificationYear3Weight, 
-            classificationrules.resitMax,
-            classificationrules.failBoundary,classificationrules.thirdLower, classificationrules.thirdUpper, classificationrules.twoTwoLower,
-            classificationrules.twoTwoUpper, classificationrules.twoOneLower, classificationrules.twoOneUpper, classificationrules.firstBoundary
-            FROM course
-            LEFT JOIN classificationrules ON course.id = classificationrules.courseID`;
-
-        try {
-            const [courses] = await db.promise().query(coursesql);
-            console.log(courses[0]);
-
-
-            res.render("officer/coursemgmt", { courses, userAccessLevel, message });
-        } catch (error) {
-            res.status(500).json(error);
-            console.log(error);
-        }
-    }
-    else {
-        res.redirect("/error");
-    }
-});
 
 adminRouter.get("/courseadd", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;

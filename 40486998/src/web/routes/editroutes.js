@@ -2,6 +2,8 @@ import express from "express";
 const editRouter = express.Router();
 import services from "../middleware/services.js"
 import db from "../middleware/db.js"
+import fs from "fs";
+import { stringify } from "csv-stringify"
 
 
 
@@ -107,6 +109,126 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
         res.redirect("/error");
     }
 });
+
+editRouter.get("/exportData", services.checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
+
+        const courseDataSQL = `SELECT course.id as courseID,student.id AS stuID, course.title, award.classification, award.finalScore, student.awardID FROM course
+    LEFT JOIN student 
+    ON student.courseID = course.id
+    LEFT JOIN award
+    ON student.awardID = award.id `;
+        const [stats] = await db.promise().query(courseDataSQL);
+
+
+        //create an array to ensure only unique courses and also house
+        // counts per course e.g. grades and no. of students 
+        const studentStats = [];
+        let globalStudentCount = 0;
+        stats.forEach((stat) => {
+            console.log(stat.title, "finalScore:", stat.finalScore, "awardID:", stat.awardID);
+            if (!studentStats[stat.courseID]) {
+                studentStats[stat.courseID] = {
+                    id: stat.courseID,
+                    title: stat.title,
+                    totalStudents: 0,
+                    gradeFirst: 0,
+                    gradeTwoOne: 0,
+                    gradeTwoTwo: 0,
+                    gradeThird: 0,
+                    gradeFail: 0,
+                    allGradedScores: 0,
+                    gradedStudents: 0
+
+                };
+            }
+
+            if (stat.stuID) {
+                studentStats[stat.courseID].totalStudents++;
+                if (stat.finalScore != null) {
+                    studentStats[stat.courseID].allGradedScores += parseFloat(stat.finalScore);
+                    studentStats[stat.courseID].gradedStudents++;
+                }
+                globalStudentCount++;
+                if (stat.classification === 'First Class Honours (1st)') {
+                    studentStats[stat.courseID].gradeFirst++;
+                }
+                if (stat.classification === 'Upper Second Class (2:1)') {
+                    studentStats[stat.courseID].gradeTwoOne++;
+                }
+                if (stat.classification === 'Lower Second Class (2:2)') {
+                    studentStats[stat.courseID].gradeTwoTwo++;
+                }
+                if (stat.classification === 'Third Class Honours') {
+                    studentStats[stat.courseID].gradeThird++;
+                }
+                if (stat.classification === 'Fail') {
+                    studentStats[stat.courseID].gradeFail++;
+                }
+
+            }
+        });
+        //course also same as stat but labelled differently here for clarity. two loops to count 
+        // both number of students and also number of classifications for each course
+        studentStats.forEach((course) => {
+            console.log(course.title, "gradedStudents:", course.gradedStudents, "allGradedScores:", course.allGradedScores);
+            course.studentCountPercentage = ((course.totalStudents / globalStudentCount) * 100).toFixed(0);
+            if (course.gradedStudents > 0) {
+                course.averageScore = (course.allGradedScores / course.gradedStudents).toFixed(2);
+            } else {
+                course.averageScore = "N/A";
+            }
+
+
+        });
+
+        studentStats.forEach((course) => {
+            if (course.totalStudents > 0) {
+                course.firstPercentage = (((course.gradeFirst / course.totalStudents) * 100).toFixed(0));
+                course.twoOnePercentage = (((course.gradeTwoOne / course.totalStudents) * 100).toFixed(0));
+                course.twoTwoPercentage = (((course.gradeTwoTwo / course.totalStudents) * 100).toFixed(0));
+                course.thirdPercentage = (((course.gradeThird / course.totalStudents) * 100).toFixed(0));
+                course.failPercentage = (((course.gradeFail / course.totalStudents) * 100).toFixed(0));
+            }
+            else {
+                course.firstPercentage = 0;
+                course.twoOnePercentage = 0;
+                course.twoTwoPercentage = 0;
+                course.thirdPercentage = 0;
+                course.failPercentage = 0;
+            }
+
+        });
+
+        const exportData = studentStats.filter(Boolean);
+
+        const columns = [
+            "title", "totalStudents", "studentCountPercentage", "averageScore",
+            "gradeFirst", "firstPercentage", "gradeTwoOne", "twoOnePercentage",
+            "gradeTwoTwo", "twoTwoPercentage", "gradeThird", "thirdPercentage",
+            "gradeFail", "failPercentage"
+        ];
+
+        stringify(exportData, { header: true, columns: columns }, (err, output) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            fs.writeFile("exportDashboard.csv", output, "utf-8", (err) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log("data saved");
+                }
+
+            })
+        });
+    } else {
+        res.redirect("/error");
+    }
+});
+
 
 editRouter.get("/viewresults/:eid", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
