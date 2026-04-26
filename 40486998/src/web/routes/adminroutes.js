@@ -223,6 +223,10 @@ adminRouter.post("/deleteofficer/", services.checkAuth, async (req, res) => {
             const [legacyName] = await db.promise().query(updateLegacyNameSQL, updateParams);
             const [officer] = await db.promise().query(deleteSingleOfficer, [params]);
 
+
+            req.session.message = `Officer ${deleteOfficerForm.officerFirstName} ${deleteOfficerForm.officerLastName} successfully added`;
+            res.redirect("/officermgmt");
+
         } catch (error) {
             res.status(500).json(error);
             console.log(error);
@@ -232,8 +236,6 @@ adminRouter.post("/deleteofficer/", services.checkAuth, async (req, res) => {
         res.redirect("/error");
     }
 
-    req.session.message = `Officer ${deleteOfficerForm.officerFirstName} ${deleteOfficerForm.officerLastName} successfully added`;
-    res.redirect("/officermgmt");
 });
 
 
@@ -286,8 +288,6 @@ VALUES (?)`
             (classificationYear2Weight, classificationYear3Weight,resitMax,failBoundary,thirdLower,thirdUpper,twoTwoLower, twoTwoUpper,twoOneLower,twoOneUpper,firstBoundary, courseID) 
             VALUES (0.30,0.70,40,39.99,40,49.99,50,59.99,60,69.99,70, ?)`;
             await db.promise().query(insertRulesSQL, [insertedCourse]);
-
-
 
 
             req.session.message = `Course ${addCourseForm.courseTitle} successfully added`;

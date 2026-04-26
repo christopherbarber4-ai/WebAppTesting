@@ -1,9 +1,10 @@
 import express from "express";
 const editRouter = express.Router();
-import services from "../middleware/services.js"
-import db from "../middleware/db.js"
+import services from "../middleware/services.js";
+import db from "../middleware/db.js";
 import fs from "fs";
-import { stringify } from "csv-stringify"
+import { stringify } from "csv-stringify";
+import axios from "axios";
 
 
 
@@ -533,6 +534,8 @@ editRouter.get("/resultadd/:eid", services.checkAuth, async (req, res) => {
 
 editRouter.post("/addresult", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
+    const message = req.session.message;
+    req.session.message = null;
     if (userAccessLevel === "officer(edit)") {
         const addResultForm = { ...req.body };
 
@@ -579,6 +582,7 @@ editRouter.post("/addresult", services.checkAuth, async (req, res) => {
                     ];
                 const [result] = await db.promise().query(insertResultSQL, params)
             }
+
             req.session.message = `Result for StudentID: ${addResultForm.studentId} for ModuleID:  ${addResultForm.studentModule} successfully added`;
             res.redirect(`/resultadd/${addResultForm.studentId}`);
 
@@ -724,7 +728,7 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
                 }
             });
 
-const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
+            const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
 
 
 
@@ -784,7 +788,7 @@ const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
             studentClassification[0],
             studentClassification[1],
             "In Progress",
-            2,
+            req.session.authen,
         ];
 
         try {
@@ -886,23 +890,23 @@ editRouter.get("/editcourse/:eid", services.checkAuth, async (req, res) => {
 editRouter.post("/editcourse", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     const editCourseForm = { ...req.body };
-const updateSQL = `UPDATE classificationrules SET 
+    const updateSQL = `UPDATE classificationrules SET 
     classificationYear2Weight = ?, classificationYear3Weight = ?, resitMax = ?, failBoundary = ?, thirdLower = ?, thirdUpper = ?, twoTwoLower = ?, twoTwoUpper = ?, twoOneLower = ?,  twoOneUpper = ?, firstBoundary = ?
     WHERE courseID = ?`;
     const updateParams = [
-    editCourseForm.year2Weight,
-    editCourseForm.year3Weight,
-    editCourseForm.resitMax,
-    editCourseForm.failBoundary,
-    editCourseForm.thirdLower,
-    editCourseForm.thirdUpper,
-    editCourseForm.twoTwoLower,
-    editCourseForm.twoTwoUpper,
-    editCourseForm.twoOneLower,
-    editCourseForm.twoOneUpper,
-    editCourseForm.firstBoundary,
-    editCourseForm.courseId
-]
+        editCourseForm.year2Weight,
+        editCourseForm.year3Weight,
+        editCourseForm.resitMax,
+        editCourseForm.failBoundary,
+        editCourseForm.thirdLower,
+        editCourseForm.thirdUpper,
+        editCourseForm.twoTwoLower,
+        editCourseForm.twoTwoUpper,
+        editCourseForm.twoOneLower,
+        editCourseForm.twoOneUpper,
+        editCourseForm.firstBoundary,
+        editCourseForm.courseId
+    ]
 
     try {
         const [result] = await db.promise().query(updateSQL, updateParams);
@@ -920,7 +924,26 @@ const updateSQL = `UPDATE classificationrules SET
 });
 
 
+//ONE ROUTE ONLY TO DEMONSTRATE SERVER SIDE RENDERING OF THE API ROUTES I HAVE MADE
+editRouter.get('/apitest', services.checkAuth, async (req, res) => {
+    const userAccessLevel = req.session.userAccessLevel;
+    if (userAccessLevel === "officer(edit)") {
+        try {
+            const ep = `http://localhost:4000/studentmgmt`;
+            const rows = await axios.get(ep);
+            const data = rows.data.data;
 
-    
+            res.render('officer/apitest', { data, userAccessLevel });
+        } catch (err) {
+            console.error('Error fetching data:', err);
+        }
+    }
+    else {
+        res.redirect("/error");
+    }
+});
+
+
+
 
 export default editRouter;

@@ -56,6 +56,7 @@ viewRouter.get("/landing", async (req, res) => {
 
 
 
+
 viewRouter.get("/error", (req, res) => {
     res.render("error");
 });

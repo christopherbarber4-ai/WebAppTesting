@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+  <link rel="stylesheet" href="myuis.css">
+  <title>HedClass</title>
+</head>
+
+<body>
+
+  <header>
+
+    <a href="/landing" class="logo">HEdClass</a>
+    <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ) { %>
+
+      <a href="/dashboard" class="button">Dashboard</a>
+      <a href="/studentmgmt" class="button">Student Management</a>
+      <% } %>
+        <% if(userAccessLevel==="admin" ) { %>
+          <a href="/officermgmt" class="button"> Officer Management </a>
+          <% } %>
+            <% if(userAccessLevel==="officer(edit)" || userAccessLevel==="admin" ) { %>
+              <a href="/coursemgmt" class="button"> Course Management</a>
+              <%}%>
+                <% if(userAccessLevel==="officer(view)" || userAccessLevel==="officer(edit)" ||
+                  userAccessLevel==="admin" ) { %>
+                  <a href="/logout" class="button">Logout</a>
+                  <% } %>
+
+                    <button> ( logged in as <Strong>
+                        <%= userAccessLevel %>
+                      </Strong>) </button>
+  </header>
+
+<h1> This page is purely to demonstrate API is working </h1>
+
+
+  <table>
+      <thead>
+    <th> First Name</th>
+    <th> Last Name</th>
+    <th> Email</th>
+    <th> Course Title</th>
+    <th> Classification </th>
+    <th> Resit? </th>
+
+  </thead>
+
+    <% data.forEach((student)=>{ %>
+      <tr>
+        <td> <b>First name:</b>
+          <%= student.firstName %> <br>
+        </td>
+        <td> <b>Second name:</b>
+          <%= student.lastName %> <br>
+        </td>
+        <td> <b>Email:</b>
+          <%= student.email %> <br>
+        </td>
+        <td> <b>Course Title:</b>
+          <%= student.title %> <br>
+        </td>
+        <td> <b>Classification:</b>
+          <%= student.classification %> <br>
+
+        <td> <b>Resit?:</b>
+          <% if (student.resit===1){ %>
+            Yes <% } else {%> No <% } %><br>
+        </td>
+      </tr>
+      </div>
+
+      <% }); %>
+        </tbody>
+  </table>
+
+  </div>
+
+</body>
+
+</html>

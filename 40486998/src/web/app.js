@@ -4,9 +4,11 @@ import sessions from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
 import db from "./middleware/db.js";
+import axios from "axios";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename); //middleware to ensure I can access static files e.g. css
 app.use(express.static(path.join(__dirname, '/public')));
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,15 +28,9 @@ import adminRoutes from "./routes/adminroutes.js";
 
 
 
-
-
-
-
 app.use("/", viewRoutes);
 app.use("/", editRoutes);
 app.use("/", adminRoutes);
-
-
 
 
 

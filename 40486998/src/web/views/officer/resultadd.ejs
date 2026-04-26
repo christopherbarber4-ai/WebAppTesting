@@ -11,6 +11,12 @@
 
 <body>
 
+      <% if (message !=='undefined' && message) { %>
+        <span class="toast" id="successToast">
+            <%= message %>
+        </span>
+        <% } %>
+
       <header>
 
         <a href="/landing" class="logo">HEdClass</a>
