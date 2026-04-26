@@ -6,11 +6,11 @@ import db from "../middleware/db.js"
 
 
 viewRouter.get("/", (req, res) => {
-    res.render("login");
+    res.render("standard/login");
 })
 
 viewRouter.get("/login", (req, res) => {
-    res.render("login");
+    res.render("standard/login");
 })
 
 viewRouter.post("/login", async (req, res) => {
@@ -44,7 +44,7 @@ viewRouter.get("/landing", async (req, res) => {
         const [rows] = await db.promise().query(checkLogin, [uID])
         const userData = rows[0];
         const userAccessLevel = req.session.userAccessLevel;
-        res.render("landing", { userData, userAccessLevel });
+        res.render("standard/landing", { userData, userAccessLevel });
     
 
     } else {
@@ -58,12 +58,12 @@ viewRouter.get("/landing", async (req, res) => {
 
 
 viewRouter.get("/error", (req, res) => {
-    res.render("error");
+    res.render("standard/error");
 });
 
 viewRouter.get("/logout", (req, res) => {
     req.session.destroy();
-    res.render("loggedout");
+    res.render("standard/loggedout");
 
 
 });
