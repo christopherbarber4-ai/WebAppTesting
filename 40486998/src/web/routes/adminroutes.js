@@ -3,6 +3,9 @@ const adminRouter = express.Router();
 import services from "../middleware/services.js"
 import db from "../middleware/db.js";
 
+
+//get officer route - displays all officer details. left joine managed course data otherwise would just be basic admin info
+//populates user SQL data into an array, so that where officers look after multiple courses, I dont have a seperate row for each!
 adminRouter.get("/officermgmt", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -28,7 +31,9 @@ adminRouter.get("/officermgmt", services.checkAuth, async (req, res) => {
                     courses: []
                 };
             }
-            if (user.courseTitle) users[user.id].courses.push(user.courseTitle);
+            if (user.courseTitle) {
+                users[user.id].courses.push(user.courseTitle); // where multiple courses are managed by same user this appends the courses key within users.
+            }
         });
 
         const coursesql = `SELECT * FROM course`
@@ -40,6 +45,7 @@ adminRouter.get("/officermgmt", services.checkAuth, async (req, res) => {
     }
 });
 
+//add officer route. dont need the results for each loop here but just copied through for speed.
 adminRouter.get("/officeradd", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -65,7 +71,9 @@ adminRouter.get("/officeradd", services.checkAuth, async (req, res) => {
                     courses: []
                 };
             }
-            if (user.courseTitle) users[user.id].courses.push(user.courseTitle);
+            if (user.courseTitle) {
+                users[user.id].courses.push(user.courseTitle);
+            }
         });
 
         const coursesql = `SELECT * FROM course`
@@ -77,6 +85,7 @@ adminRouter.get("/officeradd", services.checkAuth, async (req, res) => {
     }
 });
 
+//POST - creates the officer record first, then captures the insertedid and then POSTs to the managedCourses table
 adminRouter.post("/addofficer", async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -126,7 +135,6 @@ adminRouter.get("/editofficer/:eid", services.checkAuth, async (req, res) => {
 
     if (userAccessLevel === "admin") {
 
-
         const officerId = req.params.eid;
         const singleofficerSQL = `SELECT * FROM systemuser WHERE id = ?`
         const [officer] = await db.promise().query(singleofficerSQL, [officerId]);
@@ -142,6 +150,8 @@ adminRouter.get("/editofficer/:eid", services.checkAuth, async (req, res) => {
 });
 
 
+//POST route to edit officer. UDPATES the systemuser table and then UPDATES managed courses - deletes entries first and then inserts new. for of loops through to update where 
+//there are multiple courses to insert
 adminRouter.post("/editofficer", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -157,11 +167,6 @@ adminRouter.post("/editofficer", services.checkAuth, async (req, res) => {
             updateOfficerForm.officerPassword,
             updateOfficerForm.officerid];
 
-        const updateCoursesParams = [
-            updateOfficerForm.officerid,
-            updateOfficerForm.courseName,
-            updateOfficerForm.officerid];
-
         try {
 
             const [result] = await db.promise().query(updatOfficerSQL, updateParams);
@@ -173,10 +178,8 @@ adminRouter.post("/editofficer", services.checkAuth, async (req, res) => {
                 await db.promise().query(updateMngdCourseSQL, [updateOfficerForm.officerid, updateOfficerForm.courseName[courseid], updateOfficerForm.officerid]);
             }
 
-
             req.session.message = `Officer ${updateOfficerForm.officerFirstName} ${updateOfficerForm.officerLastName} successfully updated`;
             res.redirect("/officermgmt");
-
 
         } catch (error) {
             res.status(500).json(error);
@@ -208,6 +211,8 @@ adminRouter.get("/deleteofficer/:eid", services.checkAuth, async (req, res) => {
     }
 })
 
+//DELETE system user - to improve traceability, when deleting officer who has made an award. it updates the award record with the first and last name (concatenated)
+// into the 'legacy approver name'. then it deletes the officer from systemuser table.
 adminRouter.post("/deleteofficer/", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -270,6 +275,8 @@ adminRouter.get("/courseadd", services.checkAuth, async (req, res) => {
     }
 });
 
+
+//POST new courses. creates the course, then takes the insertedID and then posts into the classificationrules table the rules.
 adminRouter.post("/addcourse", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "admin") {
@@ -288,7 +295,6 @@ VALUES (?)`
             (classificationYear2Weight, classificationYear3Weight,resitMax,failBoundary,thirdLower,thirdUpper,twoTwoLower, twoTwoUpper,twoOneLower,twoOneUpper,firstBoundary, courseID) 
             VALUES (0.30,0.70,40,39.99,40,49.99,50,59.99,60,69.99,70, ?)`;
             await db.promise().query(insertRulesSQL, [insertedCourse]);
-
 
             req.session.message = `Course ${addCourseForm.courseTitle} successfully added`;
             res.redirect("/coursemgmt");

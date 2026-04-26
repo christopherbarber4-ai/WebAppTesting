@@ -60,7 +60,7 @@ header{
 
 
 #landingContainer{
-    border: thin solid black;
+    
     margin: 50px;
 
 }
@@ -79,7 +79,7 @@ body {
     object-fit: fill;
     border-radius: 25px;
     height: 125px;
-    width: 125px;npx
+    width: 125px;
     border: solid thin white;
 }
 
@@ -104,19 +104,6 @@ button {
     margin: 0 !important;
     display: inline !important;
 }
-
-/*
-
-.officerForm{
-    padding: 0;
-    border: 0;
-
-}
-
-.header{
-
-*/
-
 
 
 #studentTable {

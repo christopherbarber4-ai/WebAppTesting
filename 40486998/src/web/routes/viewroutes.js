@@ -4,7 +4,7 @@ import services from "../middleware/services.js"
 import db from "../middleware/db.js"
 
 
-
+//root is the login page.
 viewRouter.get("/", (req, res) => {
     res.render("standard/login");
 })
@@ -13,6 +13,10 @@ viewRouter.get("/login", (req, res) => {
     res.render("standard/login");
 })
 
+
+//checks the DB for matching email address. if so
+// session id = systemuser id
+// session Access = systemuser role (which is then checked at nearly every route e.g. if role === 'admin' )
 viewRouter.post("/login", async (req, res) => {
     const userEmail = req.body.userEmail;
     const userPass = req.body.userPassword;
@@ -37,6 +41,7 @@ viewRouter.post("/login", async (req, res) => {
 
 
 
+//if there is a a value for authen then load landing
 viewRouter.get("/landing", async (req, res) => {
     if (req.session.authen) {
         const uID = req.session.authen;

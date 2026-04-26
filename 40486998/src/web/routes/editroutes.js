@@ -7,12 +7,17 @@ import { stringify } from "csv-stringify";
 import axios from "axios";
 
 
-
+//values to help with readabillity for classification calculation
 const RESIT_MAX = 40;
 const TOTAL_CREDS = 120;
 
 
 
+//fairly complicated in order to generate useful dashboard info
+//step 1 - course data adn left join student/award = using courseID
+//step 2 - create studentStats array with unique course objects then go through each record and update counts, total students, firsts etc.
+//step 3 - go through the array of course objects and add in % of students and average score    
+//step 4 - go through array and calculate %'s this time of each classification
 editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
@@ -24,13 +29,13 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
     ON student.awardID = award.id `;
         const [stats] = await db.promise().query(courseDataSQL);
 
-
         //create an array to ensure only unique courses and also house
         // counts per course e.g. grades and no. of students 
         const studentStats = [];
         let globalStudentCount = 0;
         stats.forEach((stat) => {
-            console.log(stat.title, "finalScore:", stat.finalScore, "awardID:", stat.awardID);
+      
+            //if courseIf doesnt exist, create object with these keys and values.
             if (!studentStats[stat.courseID]) {
                 studentStats[stat.courseID] = {
                     id: stat.courseID,
@@ -47,6 +52,7 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
                 };
             }
 
+            //if each stat has at least one student on it, count
             if (stat.stuID) {
                 studentStats[stat.courseID].totalStudents++;
                 if (stat.finalScore != null) {
@@ -72,10 +78,9 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
 
             }
         });
-        //course also same as stat but labelled differently here for clarity. two loops to count 
+        //two loops to count 
         // both number of students and also number of classifications for each course
         studentStats.forEach((course) => {
-            console.log(course.title, "gradedStudents:", course.gradedStudents, "allGradedScores:", course.allGradedScores);
             course.studentCountPercentage = ((course.totalStudents / globalStudentCount) * 100).toFixed(0);
             if (course.gradedStudents > 0) {
                 course.averageScore = (course.allGradedScores / course.gradedStudents).toFixed(2);
@@ -105,7 +110,7 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
         });
 
 
-        res.render("officer/dashboard", { studentStats: studentStats.filter(Boolean), userAccessLevel });
+        res.render("officer/dashboard", { studentStats: studentStats.filter(Boolean), userAccessLevel }); // Boolean - only passes studenStats that are not null
     } else {
         res.redirect("/error");
     }
@@ -122,9 +127,6 @@ editRouter.get("/exportData", services.checkAuth, async (req, res) => {
     ON student.awardID = award.id `;
         const [stats] = await db.promise().query(courseDataSQL);
 
-
-        //create an array to ensure only unique courses and also house
-        // counts per course e.g. grades and no. of students 
         const studentStats = [];
         let globalStudentCount = 0;
         stats.forEach((stat) => {
@@ -170,8 +172,7 @@ editRouter.get("/exportData", services.checkAuth, async (req, res) => {
 
             }
         });
-        //course also same as stat but labelled differently here for clarity. two loops to count 
-        // both number of students and also number of classifications for each course
+
         studentStats.forEach((course) => {
             console.log(course.title, "gradedStudents:", course.gradedStudents, "allGradedScores:", course.allGradedScores);
             course.studentCountPercentage = ((course.totalStudents / globalStudentCount) * 100).toFixed(0);
@@ -202,8 +203,10 @@ editRouter.get("/exportData", services.checkAuth, async (req, res) => {
 
         });
 
+        //set up key stats for export and ensure no empty objects in array
         const exportData = studentStats.filter(Boolean);
 
+        //specific columns to show
         const columns = [
             "title", "totalStudents", "studentCountPercentage", "averageScore",
             "gradeFirst", "firstPercentage", "gradeTwoOne", "twoOnePercentage",
@@ -211,7 +214,8 @@ editRouter.get("/exportData", services.checkAuth, async (req, res) => {
             "gradeFail", "failPercentage"
         ];
 
-        stringify(exportData, { header: true, columns: columns }, (err, output) => {
+        //converts array of course objects into (csv formatted) string. stringify is from the csv package
+        stringify(exportData, { header: true, columns: columns }, (err, output) => { // header - column name as first row of csv
             if (err) {
                 console.log(err);
                 return;
@@ -220,7 +224,7 @@ editRouter.get("/exportData", services.checkAuth, async (req, res) => {
                 if (err) {
                     console.log(err);
                 } else {
-                    console.log("data saved");
+                    console.log("data exported");
                 }
 
             })
@@ -230,7 +234,7 @@ editRouter.get("/exportData", services.checkAuth, async (req, res) => {
     }
 });
 
-
+//checks where where student id and systemuser id match across student and managed courses. session.authen being the system user id
 editRouter.get("/viewresults/:eid", services.checkAuth, async (req, res) => {
     const userAccessLevel = req.session.userAccessLevel;
     if (userAccessLevel === "officer(view)" || userAccessLevel === "officer(edit)") {
@@ -293,7 +297,7 @@ editRouter.get("/viewresults/:eid", services.checkAuth, async (req, res) => {
 });
 
 
-
+//'As' alias included as multiple tables have id and student id was being overwritten.
 editRouter.get("/studentmgmt", services.checkAuth, async (req, res) => {
 
     const userAccessLevel = req.session.userAccessLevel;
@@ -544,7 +548,7 @@ editRouter.post("/addresult", services.checkAuth, async (req, res) => {
         const [existingScore] = await db.promise().query(checkExistingScoreSQL,
             [addResultForm.studentId, addResultForm.studentModule])
 
-        //if there is an existing sore and the form is not being submitted as a resit then return to view results
+        //if there is an existing score and the form is not being submitted as a 'resit' then return to view results
 
         if (existingScore.length > 0 && addResultForm.isResit == 0) {
             req.session.message = `Error - A score already exists for this module. Score not added`
@@ -620,7 +624,7 @@ editRouter.post("/editclassification", services.checkAuth, async (req, res) => {
     if (userAccessLevel === "officer(edit)") {
         const editClassificationform = { ...req.body };
         let manualOverride;
-        if (editClassificationform.classification !== editClassificationform.originalClassification) {
+        if (editClassificationform.classification !== editClassificationform.currentClassification) {
             manualOverride = 1;
         } else {
             manualOverride = 0;
@@ -729,8 +733,6 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
             });
 
             const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
-
-
 
 
             let classificationYear2Weight = rules[0].classificationYear2Weight;
