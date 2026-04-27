@@ -19,7 +19,7 @@ header a.button:hover {
   }
   
 
-@media (max-width: 768px) {
+@media (max-width: 768px) { // when ctablet - mobile screen size apply below
   header a.button {
     width: 100%;
     text-align: left;

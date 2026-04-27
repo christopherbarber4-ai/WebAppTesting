@@ -1,5 +1,4 @@
 import express from "express";
-
 import sessions from "express-session";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -18,6 +17,7 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 const PORT = 3000;
+
 //SESSIONS SET UP
 const oneHour = 10000 * 60 * 60 * 1; // variable for cookie timeout
 app.use(sessions({ // creates a session object on the node server
@@ -27,11 +27,10 @@ app.use(sessions({ // creates a session object on the node server
     resave: false
 }));
 
+//ensure can access all routes
 import viewRoutes from "./routes/viewroutes.js";
 import editRoutes from "./routes/editroutes.js";
 import adminRoutes from "./routes/adminroutes.js";
-
-
 
 app.use("/", viewRoutes);
 app.use("/", editRoutes);

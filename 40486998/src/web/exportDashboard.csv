@@ -1,7 +1,0 @@
-title,totalStudents,studentCountPercentage,averageScore,gradeFirst,firstPercentage,gradeTwoOne,twoOnePercentage,gradeTwoTwo,twoTwoPercentage,gradeThird,thirdPercentage,gradeFail,failPercentage
-BSc Computer Science,3,15,67.00,1,33,0,0,1,33,1,33,0,0
-BSc Software Engineering,4,20,49.25,1,25,2,50,0,0,0,0,1,25
-BSc Cybersecurity,4,20,47.25,1,25,1,25,0,0,1,25,1,25
-BSc Data Science,4,20,61.25,2,50,0,0,1,25,1,25,0,0
-BSc Artificial Intelligence,5,25,59.50,0,0,1,20,1,20,0,0,0,0
-"ty,chjcdg",0,0,N/A,0,0,0,0,0,0,0,0,0,0
