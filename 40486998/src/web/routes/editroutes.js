@@ -34,7 +34,7 @@ editRouter.get("/dashboard", services.checkAuth, async (req, res) => {
         const studentStats = [];
         let globalStudentCount = 0;
         stats.forEach((stat) => {
-      
+
             //if courseIf doesnt exist, create object with these keys and values.
             if (!studentStats[stat.courseID]) {
                 studentStats[stat.courseID] = {
@@ -735,6 +735,8 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
             const [rules] = await db.promise().query(classificatonRulesSQL, [studentId]);
 
 
+
+
             let classificationYear2Weight = rules[0].classificationYear2Weight;
             let classificationYear3Weight = rules[0].classificationYear3Weight;
             let classificationFail = rules[0].failBoundary;
@@ -773,6 +775,7 @@ editRouter.post("/addclassification/", services.checkAuth, async (req, res) => {
                 else if (classification[0] >= classificationFirst) {
                     classification[1] = "First Class Honours (1st)";
                 }
+                console.log(classification[0], classification[1]);
 
                 return classification;
             }
